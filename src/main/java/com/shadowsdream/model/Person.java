@@ -1,14 +1,18 @@
 package com.shadowsdream.model;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.LocalDate;
 import java.util.List;
 
 @Getter
 @Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@EqualsAndHashCode(of = "id")
+@ToString
 public class Person {
+    private Long id;
     private String firstName;
     private String lastName;
     private Gender gender;
