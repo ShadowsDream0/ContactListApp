@@ -1,38 +1,28 @@
-/*package com.shadowsdream.dao;
+package com.shadowsdream.dao;
 
 import com.shadowsdream.exception.DaoOperationException;
-import com.shadowsdream.model.Gender;
 import com.shadowsdream.model.Person;
+import com.shadowsdream.model.PhoneNumber;
+import com.shadowsdream.model.PhoneType;
 
 import javax.sql.DataSource;
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
-// todo
-public class PhoneNumberDaoImpl implements PhoneNumberDao {
+public class PhoneNumberDaoImpl implements PhoneNumberDao{
     private DataSource dataSource;
 
-    private static final String INSERT_SQL_STATEMENT = "INSERT INTO persons " +
-            "(first_name, last_name, gender, birthday, city, email) " +
-            "VALUES (?, ?, ?, ?, ?, ?);";
+    private final String SELECT_ALL_SQL_STATEMENT = "SELECT * FROM phones;";
 
-    private static final String UPDATE_SQL_STATEMENT = "UPDATE persons " +
-            "SET first_name = ?, " +
-            "last_name = ?, " +
-            "gender = ?, " +
-            "birthday = ?, " +
-            "city = ?, " +
-            "email = ? " +
-            "WHERE id = ?;";
+    private final String INSERT_SQL_STATEMENT = "INSERT INTO phones (phone_number, phone_type, person_id)" +
+                                                " VALUES (?, CAST(? AS TYPE_OF_PHONE), ?);";
 
-    private static final String SELECT_ALL_SQL_STATEMENT = "SELECT * FROM persons;";
+    private final String UPDATE_SQL_STATEMENT = "UPDATE phones " +
+                                                    "SET " +
+                                                        "phone_number = ?, " +
+                                                        "phone_type = CAST(? AS TYPE_OF_PHONE) " +
+                                                        "WHERE id = ?;";
 
-    private static final String SELECT_BY_ID_SQL_STATEMENT = "SELECT * FROM persons WHERE id = ?";
-
-    private static final String DELETE_BY_ID_SQL_STATEMENT = "DELETE FROM persons WHERE id = ?;";
 
     public PhoneNumberDaoImpl(DataSource dataSource) {
         this.dataSource = dataSource;
@@ -40,135 +30,109 @@ public class PhoneNumberDaoImpl implements PhoneNumberDao {
 
 
     @Override
-    public Long save(Person person) {
-        Objects.requireNonNull(person, "Argument person must not be null");
-
-        PreparedStatement preparedStatement = getPreparedStatementWithGeneratedKeys(INSERT_SQL_STATEMENT);
-        setPreparedStatement(preparedStatement, person);
-
-        if (executeUpdateAndHandleException(preparedStatement) != 1) {
-            throw new DaoOperationException("Inserting into a table has failed because of some reasons");
-        }
-
-        try {
-            ResultSet generatedKey = preparedStatement.getGeneratedKeys();
-            if (generatedKey.next()) {
-                long id = generatedKey.getLong("id");
-                person.setId(id);
-                return id;
-            } else {
-                throw new DaoOperationException("No Id returned after save book");
-            }
-        } catch (SQLException e) {
-            throw new DaoOperationException("Error during getting id from the result set");
-        }
-    }
-
-    @Override
-    public List<Person> findAll() {
-
-        PreparedStatement preparedStatement = getPreparedStatement(SELECT_ALL_SQL_STATEMENT);
-
-        try {
-            ResultSet resultSet = preparedStatement.executeQuery();
-
-            return (List<Person>) getPersonCollection(resultSet);
-
-        } catch (SQLException e) {
-            throw new DaoOperationException("Error during executing query", e);
-        }
-    }
-
-    @Override
-    public Person findById(Long id) {
-        Objects.requireNonNull(id, "Argument id must not be null");
+    public Map<Long, List<PhoneNumber>> getPhoneNumbersGroupedByPersonId() {
 
         ResultSet resultSet = null;
 
-        PreparedStatement preparedStatement = getPreparedStatement(SELECT_BY_ID_SQL_STATEMENT);
-
-        try {
-            preparedStatement.setLong(1, id);
+        try (Connection connection = dataSource.getConnection()) {
+            PreparedStatement preparedStatement = connection.prepareStatement(SELECT_ALL_SQL_STATEMENT);
             resultSet = preparedStatement.executeQuery();
+
         } catch (SQLException e) {
-            throw new DaoOperationException("Error during finding entity by id", e);
+            throw new DaoOperationException("Error during selecting phone numbers by id");
         }
 
-        Person person = new Person();
-        setPersonFromResultSet(resultSet, person);
-
-        return person;
+        return getMapOfPhoneNumbers(resultSet);
     }
+
 
     @Override
-    public void update(Person person) {
-        Objects.requireNonNull(person, "Argument person must not be null");
+    public Set<Long> savePhoneNumbers(Long personId, List<PhoneNumber> phoneNumberList) {
+        Objects.requireNonNull(personId, "Argument personId must not be null");
+        Objects.requireNonNull(phoneNumberList, "Argument phoneNumberList must not be null");
 
-        PreparedStatement preparedStatement = getPreparedStatement(UPDATE_SQL_STATEMENT);
-        setPreparedStatement(preparedStatement, person);
-
-        if (executeUpdateAndHandleException(preparedStatement) == 0) {
-            throw new DaoOperationException("Updating table has failed because of some reasons");
+        Set<Long> idSet = new HashSet<>();
+        for (PhoneNumber pn : phoneNumberList) {
+            idSet.add(savePhoneNumber(personId, pn));
         }
+
+        return idSet;
     }
+
 
     @Override
-    public void remove(Long id) {
-        Objects.requireNonNull(id, "Argument id must not be null");
-
-        PreparedStatement preparedStatement = getPreparedStatement(DELETE_BY_ID_SQL_STATEMENT);
-
-        try {
-            preparedStatement.setLong(1, id);
-        } catch (SQLException e) {
-            throw new DaoOperationException("Error during setting prepared statement", e);
-        }
-
-        if (executeUpdateAndHandleException(preparedStatement) == 0) {
-            throw new DaoOperationException("Deleting from table has failed because of some reasons");
-        }
+    public void remove(PhoneNumber phoneNumber) {
+        return;
     }
 
 
-    private PreparedStatement getPreparedStatement (String sqlStatement) {
+
+    @Override
+    public void updatePhoneNumber(Long phoneId, PhoneNumber phoneNumber) {
+        Objects.requireNonNull(phoneNumber, "Argument phoneNumber must not be null");
 
         try (Connection connection = dataSource.getConnection()) {
-            return connection.prepareStatement(sqlStatement);
+            PreparedStatement preparedStatement = connection.prepareStatement(UPDATE_SQL_STATEMENT);
+            setPreparedStatement(preparedStatement, phoneNumber, phoneId);
+
+            if (executeUpdateAndHandleException(preparedStatement) != 1) {
+                throw new DaoOperationException("Failed to update table");
+            }
 
         } catch (SQLException e) {
-            throw  new DaoOperationException("Error during preparing sql statement", e);
+            throw new DaoOperationException("Error during updating table", e);
         }
     }
 
 
-    private PreparedStatement getPreparedStatementWithGeneratedKeys (String sqlStatement) {
+    private boolean setPhoneNumberFromResultSet(ResultSet resultSet, PhoneNumber phoneNumber) {
+        Objects.requireNonNull(resultSet, "Argument resultSet must not be null");
+        Objects.requireNonNull(phoneNumber, "Argument phoneNumber must not be null");
 
-        Objects.requireNonNull(sqlStatement, "Argument sqlStatement must not be null");
-
-        try (Connection connection = dataSource.getConnection()) {
-            return connection.prepareStatement(sqlStatement, PreparedStatement.RETURN_GENERATED_KEYS);
-
-        } catch (SQLException e) {
-            throw  new DaoOperationException("Error during preparing sql statement", e);
-        }
-    }
-
-
-    private void setPreparedStatement(PreparedStatement preparedStatement, Person person) {
-        Objects.requireNonNull(preparedStatement, "Argument preparedStatement must not be null");
-        Objects.requireNonNull(person, "Argument person must not be null");
+        boolean hasNext = false;
 
         try {
-            int parameterIndex = 1;
-            preparedStatement.setString(parameterIndex++, person.getFirstName());
-            preparedStatement.setString(parameterIndex++, person.getLastName());
-            preparedStatement.setString(parameterIndex++, person.getGender().getGenderAsString());
-            preparedStatement.setDate(parameterIndex++, Date.valueOf(person.getBirthday()));
-            preparedStatement.setString(parameterIndex++, person.getCity());
-            preparedStatement.setString(parameterIndex, person.getEmail());
+            if (!(hasNext = resultSet.next())) {
+                return hasNext;
+            }
+            phoneNumber.setPhone(resultSet.getString("phone_number"));
+            phoneNumber.setType(PhoneType.valueOf(resultSet.getString("phone_type").toUpperCase()));
         } catch (SQLException e) {
-            throw new DaoOperationException("Error during setting prepared statement", e);
+            throw new DaoOperationException("Error during reading result set", e);
         }
+
+        return hasNext;
+    }
+
+
+    private Map<Long, List<PhoneNumber>> getMapOfPhoneNumbers(ResultSet resultSet) {
+        Objects.requireNonNull(resultSet, "Argument resultSet must not null");
+
+        Map<Long, List<PhoneNumber>> mapOfPhoneNumbers = new HashMap<>();
+        Long id = null;
+        List<PhoneNumber> phoneNumberList = null;
+        PhoneNumber phoneNumber = null;
+        try {
+            while (true) {
+                phoneNumber = new PhoneNumber();
+                if (!setPhoneNumberFromResultSet(resultSet, phoneNumber)) {
+                    break;
+                }
+
+                id = resultSet.getLong("person_id");
+                if (!mapOfPhoneNumbers.containsKey(id)) {
+                    phoneNumberList = new ArrayList<>();
+                    mapOfPhoneNumbers.put(id, phoneNumberList);
+                    phoneNumberList.add(phoneNumber);
+                } else {
+                    phoneNumberList.add(phoneNumber);
+                }
+            }
+
+        } catch (SQLException e) {
+            throw new DaoOperationException("Error during reading result set", e);
+        }
+        return mapOfPhoneNumbers;
     }
 
 
@@ -178,49 +142,50 @@ public class PhoneNumberDaoImpl implements PhoneNumberDao {
         try {
             return preparedStatement.executeUpdate();
         } catch (SQLException e) {
-            throw new DaoOperationException("Error during executing update on prepared statement");
+            throw new DaoOperationException("Error during executing update on prepared statement", e);
         }
     }
 
 
-    private boolean setPersonFromResultSet(ResultSet resultSet, Person person) {
-        Objects.requireNonNull(resultSet, "Argument resultSet must not be null");
+    private Long savePhoneNumber(Long personId, PhoneNumber phoneNumber) {
+        try(Connection connection = dataSource.getConnection()) {
+            PreparedStatement preparedStatement = connection.prepareStatement(INSERT_SQL_STATEMENT,
+                                                    PreparedStatement.RETURN_GENERATED_KEYS);
+            setPreparedStatement(preparedStatement, phoneNumber, personId);
 
-        boolean hasNext = false;
-
-        try {
-            if (!(hasNext = resultSet.next())) {
-                return hasNext;
+            if (executeUpdateAndHandleException(preparedStatement) != 1) {
+                throw new DaoOperationException("Failed to insert into table");
             }
 
-            person.setId(resultSet.getLong("id"));
-            person.setFirstName(resultSet.getString("first_name"));
-            person.setLastName(resultSet.getString("last_name"));
-            person.setGender(Gender.valueOf(resultSet.getString("gender")));
-            person.setBirthday(resultSet.getDate("birthday").toLocalDate());
-            person.setCity(resultSet.getString("city"));
-            person.setEmail(resultSet.getString("email"));
+
+            ResultSet generatedKey = preparedStatement.getGeneratedKeys();
+            if (generatedKey.next()) {
+                long id = generatedKey.getLong("id");
+                return id;
+            } else {
+                throw new DaoOperationException("No Id returned after save book");
+            }
 
         } catch (SQLException e) {
-            throw new DaoOperationException("Error during reading result set");
+            throw new DaoOperationException("Error during saving phone number");
         }
-
-        return hasNext;
     }
 
 
-    private Collection<Person> getPersonCollection(ResultSet resultSet) {
+    private int setPreparedStatement(PreparedStatement preparedStatement, PhoneNumber phoneNumber, Long id) {
+        Objects.requireNonNull(preparedStatement, "Argument preparedStatement must not be null");
+        Objects.requireNonNull(phoneNumber, "Argument phoneNumber must not be null");
+        Objects.requireNonNull(id, "Argument id must not be null");
 
-        Collection<Person> collectionOfPersons = new ArrayList<>();
-
-        while (true) {
-            Person person = new Person();
-            if (setPersonFromResultSet(resultSet, person)) {
-                break;
-            }
-            collectionOfPersons.add(person);
+        int parameterIndex = 1;
+        try {
+            preparedStatement.setString(parameterIndex++, phoneNumber.getPhone());
+            preparedStatement.setString(parameterIndex++, phoneNumber.getType().toString());
+            preparedStatement.setLong(parameterIndex, id);
+        } catch (SQLException e) {
+            throw new DaoOperationException("Error during setting prepared statement", e);
         }
 
-        return collectionOfPersons;
+        return parameterIndex;
     }
-}*/
+}

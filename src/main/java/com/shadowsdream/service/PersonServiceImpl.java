@@ -6,12 +6,15 @@ import com.shadowsdream.model.Person;
 
 import javax.sql.DataSource;
 import java.util.List;
+import java.util.Objects;
 
 public class PersonServiceImpl implements PersonService {
 
     private PersonDao personDao = null;
 
     public PersonServiceImpl(DataSource dataSource) {
+        Objects.requireNonNull(dataSource, "Arguments dataSource must not be null");
+
         this.personDao = new PersonDaoImpl(dataSource);
     }
 

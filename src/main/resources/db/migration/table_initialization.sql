@@ -3,10 +3,10 @@ BEGIN TRANSACTION;
     DROP TABLE IF EXISTS phones;
     DROP TABLE IF EXISTS persons;
     DROP TYPE IF EXISTS GENDER;
-    DROP TYPE IF EXISTS PHONE_TYPE;
+    DROP TYPE IF EXISTS TYPE_OF_PHONE;
 
     CREATE TYPE GENDER AS enum('male', 'female', 'transgender');
-    CREATE TYPE PHONE_TYPE AS enum('mobile', 'desktop');
+    CREATE TYPE TYPE_OF_PHONE AS enum('mobile', 'desktop');
 
     CREATE TABLE persons (
         id SERIAL,
@@ -23,7 +23,7 @@ BEGIN TRANSACTION;
     CREATE TABLE phones (
         id SERIAL,
         phone_number VARCHAR(15) NOT NULL,
-        phone_type PHONE_TYPE NOT NULL,
+        phone_type TYPE_OF_PHONE NOT NULL,
         person_id BIGINT NOT NULL,
         CONSTRAINT phones_PK PRIMARY KEY (id),
         CONSTRAINT phones_AK UNIQUE (phone_number, person_id),
