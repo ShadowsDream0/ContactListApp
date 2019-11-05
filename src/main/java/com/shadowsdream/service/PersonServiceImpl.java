@@ -2,7 +2,10 @@ package com.shadowsdream.service;
 
 import com.shadowsdream.dao.PersonDao;
 import com.shadowsdream.dao.PersonDaoImpl;
+import com.shadowsdream.exception.DaoOperationException;
+import com.shadowsdream.exception.DeleteOperationException;
 import com.shadowsdream.model.Person;
+import com.shadowsdream.model.PhoneNumber;
 
 import javax.sql.DataSource;
 import java.util.List;
@@ -30,11 +33,19 @@ public class PersonServiceImpl implements PersonService {
         return personDao.findById(id);
     }
 
-    public void update(Person person) {
-        personDao.update(person);
+    public void updatePerson(Person person) {
+        personDao.updatePerson(person);
     }
 
-    public void remove(Long id) {
-        personDao.remove(id);
+    public void updatePhoneNumber(PhoneNumber phoneNumber) {
+        personDao.updatePhoneNumber(phoneNumber);
+    }
+
+    public void removePerson(Long id) {
+        personDao.removePerson(id);
+    }
+
+    public void removePhoneNumber(Long id) {
+        personDao.removePhoneNumber(id);
     }
 }

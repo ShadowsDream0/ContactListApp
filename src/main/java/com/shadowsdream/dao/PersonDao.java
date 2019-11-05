@@ -1,6 +1,7 @@
 package com.shadowsdream.dao;
 
 import com.shadowsdream.model.Person;
+import com.shadowsdream.model.PhoneNumber;
 
 import java.util.List;
 
@@ -11,7 +12,11 @@ public interface PersonDao {
 
     Person findById(Long id);
 
-    void update(Person person);
+    void updatePerson(Person person);
 
-    void remove(Long id);
+    void updatePhoneNumber(PhoneNumber phoneNumber);
+
+    void removePerson(Long id);
+
+    void removePhoneNumber(Long phoneNumberId);
 }

@@ -1,12 +1,17 @@
 package com.shadowsdream.dao;
 
 import com.shadowsdream.exception.DaoOperationException;
-import com.shadowsdream.model.Person;
+import com.shadowsdream.exception.DeleteOperationException;
+import com.shadowsdream.exception.InsertOperationException;
+import com.shadowsdream.exception.UpdateOperationException;
 import com.shadowsdream.model.PhoneNumber;
 import com.shadowsdream.model.PhoneType;
 
 import javax.sql.DataSource;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.*;
 
 public class PhoneNumberDaoImpl implements PhoneNumberDao{
@@ -23,6 +28,8 @@ public class PhoneNumberDaoImpl implements PhoneNumberDao{
                                                         "phone_type = CAST(? AS TYPE_OF_PHONE) " +
                                                         "WHERE id = ?;";
 
+    private final String DELETE_ALL_SQL_STATEMENT = "DELETE FROM phones WHERE person_id = ?;";
+    private final String DELETE_ONE_SQL_STATEMENT = "DELETE FROM phones WHERE id = ?;";
 
     public PhoneNumberDaoImpl(DataSource dataSource) {
         this.dataSource = dataSource;
@@ -39,7 +46,7 @@ public class PhoneNumberDaoImpl implements PhoneNumberDao{
             resultSet = preparedStatement.executeQuery();
 
         } catch (SQLException e) {
-            throw new DaoOperationException("Error during selecting phone numbers by id");
+            throw new DaoOperationException("Error during selecting phone numbers by id", e);
         }
 
         return getMapOfPhoneNumbers(resultSet);
@@ -61,22 +68,32 @@ public class PhoneNumberDaoImpl implements PhoneNumberDao{
 
 
     @Override
-    public void remove(PhoneNumber phoneNumber) {
-        return;
+    public void removeAllPersonPhoneNumbers(Long personId) {
+       Objects.requireNonNull(personId, "Argumernt personId must not be null");
+
+        remove(DELETE_ALL_SQL_STATEMENT, personId);
+    }
+
+
+    @Override
+    public void removePhoneNumber(Long id) {
+        Objects.requireNonNull(id, "Argument id must not be null");
+
+        remove(DELETE_ONE_SQL_STATEMENT, id);
     }
 
 
 
     @Override
-    public void updatePhoneNumber(Long phoneId, PhoneNumber phoneNumber) {
+    public void updatePhoneNumber(PhoneNumber phoneNumber) {
         Objects.requireNonNull(phoneNumber, "Argument phoneNumber must not be null");
 
         try (Connection connection = dataSource.getConnection()) {
             PreparedStatement preparedStatement = connection.prepareStatement(UPDATE_SQL_STATEMENT);
-            setPreparedStatement(preparedStatement, phoneNumber, phoneId);
+            setPreparedStatement(preparedStatement, phoneNumber, phoneNumber.getId());
 
             if (executeUpdateAndHandleException(preparedStatement) != 1) {
-                throw new DaoOperationException("Failed to update table");
+                throw new UpdateOperationException("Failed to update phone number");
             }
 
         } catch (SQLException e) {
@@ -95,6 +112,7 @@ public class PhoneNumberDaoImpl implements PhoneNumberDao{
             if (!(hasNext = resultSet.next())) {
                 return hasNext;
             }
+            phoneNumber.setId(resultSet.getLong("id"));
             phoneNumber.setPhone(resultSet.getString("phone_number"));
             phoneNumber.setType(PhoneType.valueOf(resultSet.getString("phone_type").toUpperCase()));
         } catch (SQLException e) {
@@ -154,7 +172,7 @@ public class PhoneNumberDaoImpl implements PhoneNumberDao{
             setPreparedStatement(preparedStatement, phoneNumber, personId);
 
             if (executeUpdateAndHandleException(preparedStatement) != 1) {
-                throw new DaoOperationException("Failed to insert into table");
+                throw new InsertOperationException("phone number already exists");
             }
 
 
@@ -187,5 +205,20 @@ public class PhoneNumberDaoImpl implements PhoneNumberDao{
         }
 
         return parameterIndex;
+    }
+
+
+    private void remove(String sqlStatement, Long id) {
+        try (Connection connection = dataSource.getConnection()) {
+            PreparedStatement preparedStatement = connection.prepareStatement(sqlStatement);
+            preparedStatement.setLong(1, id);
+
+            if(executeUpdateAndHandleException(preparedStatement) == 0) {
+                throw new DeleteOperationException("no such phone number");
+            }
+
+        } catch (SQLException e) {
+            throw new DaoOperationException("Error during removing phone numbers from table");
+        }
     }
 }

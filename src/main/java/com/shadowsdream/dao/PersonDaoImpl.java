@@ -1,6 +1,9 @@
 package com.shadowsdream.dao;
 
 import com.shadowsdream.exception.DaoOperationException;
+import com.shadowsdream.exception.DeleteOperationException;
+import com.shadowsdream.exception.InsertOperationException;
+import com.shadowsdream.exception.UpdateOperationException;
 import com.shadowsdream.model.Gender;
 import com.shadowsdream.model.Person;
 import com.shadowsdream.model.PhoneNumber;
@@ -47,18 +50,19 @@ public class PersonDaoImpl implements PersonDao {
         try (Connection connection = dataSource.getConnection()) {
             PreparedStatement preparedStatement = connection.prepareStatement(INSERT_SQL_STATEMENT,
                     PreparedStatement.RETURN_GENERATED_KEYS);
-            setPreparedStatement(preparedStatement, person);
+            setPreparedStatementExceptId(preparedStatement, person);
 
             if (executeUpdateAndHandleException(preparedStatement) != 1) {
-                throw new DaoOperationException("Inserting into a table has failed");
+                throw new InsertOperationException("such person already exists");
             }
-
-            phoneNumberDao.savePhoneNumbers(person.getId(), person.getPhoneNumbers());
 
             ResultSet generatedKey = preparedStatement.getGeneratedKeys();
             if (generatedKey.next()) {
                 long id = generatedKey.getLong("id");
                 person.setId(id);
+
+                phoneNumberDao.savePhoneNumbers(person.getId(), person.getPhoneNumbers());
+
                 return id;
             } else {
                 throw new DaoOperationException("No Id returned after save book");
@@ -108,17 +112,15 @@ public class PersonDaoImpl implements PersonDao {
 
 
     @Override
-    public void update(Person person) {
+    public void updatePerson(Person person) {
         Objects.requireNonNull(person, "Argument person must not be null");
 
         try (Connection connection = dataSource.getConnection()) {
             PreparedStatement preparedStatement = connection.prepareStatement(UPDATE_SQL_STATEMENT);
-            setPreparedStatementWithId(preparedStatement, person);
-
-            phoneNumberDao.updatePhoneNumber();
+            setPreparedStatementFull(preparedStatement, person);
 
             if (executeUpdateAndHandleException(preparedStatement) == 0) {
-                throw new DaoOperationException("Updating table has failed");
+                throw new UpdateOperationException("Updating table has failed");
             }
 
         } catch (SQLException e) {
@@ -127,16 +129,23 @@ public class PersonDaoImpl implements PersonDao {
     }
 
 
+    public void updatePhoneNumber(PhoneNumber phoneNumber) {
+        phoneNumberDao.updatePhoneNumber(phoneNumber);
+    }
+
+
     @Override
-    public void remove(Long id) {
+    public void removePerson(Long id) {
         Objects.requireNonNull(id, "Argument id must not be null");
+
+        phoneNumberDao.removeAllPersonPhoneNumbers(id);
 
         try (Connection connection = dataSource.getConnection()) {
             PreparedStatement preparedStatement = connection.prepareStatement(DELETE_BY_ID_SQL_STATEMENT);
             preparedStatement.setLong(1, id);
 
             if (executeUpdateAndHandleException(preparedStatement) == 0) {
-                throw new DaoOperationException("Deleting from table has failed");
+                throw new DeleteOperationException("no such person");
             }
 
         } catch (SQLException e) {
@@ -145,15 +154,13 @@ public class PersonDaoImpl implements PersonDao {
     }
 
 
-    private void setPreparedStatement(PreparedStatement preparedStatement, Person person) {
-        Objects.requireNonNull(preparedStatement, "Argument preparedStatement must not be null");
-        Objects.requireNonNull(person, "Argument person must not be null");
-
-        setPreparedStatementExceptId(preparedStatement, person);
+    @Override
+    public void removePhoneNumber(Long phoneNumberId) {
+        phoneNumberDao.removePhoneNumber(phoneNumberId);
     }
 
 
-    private void setPreparedStatementWithId(PreparedStatement preparedStatement, Person person) {
+    private void setPreparedStatementFull(PreparedStatement preparedStatement, Person person) {
         Objects.requireNonNull(preparedStatement, "Argument preparedStatement must not be null");
         Objects.requireNonNull(person, "Argument person must not be null");
 
@@ -161,7 +168,7 @@ public class PersonDaoImpl implements PersonDao {
         try {
             preparedStatement.setLong(++parameterIndex, person.getId());
         } catch (SQLException e) {
-            throw new DaoOperationException("Error during setting id on prepared statement");
+            throw new DaoOperationException("Error during setting id on prepared statement", e);
         }
     }
 
@@ -219,7 +226,7 @@ public class PersonDaoImpl implements PersonDao {
             setPhoneNumbersForPerson(resultSet, person);
 
         } catch (SQLException e) {
-            throw new DaoOperationException("Error during reading result set");
+            throw new DaoOperationException("Error during reading result set", e);
         }
 
         return hasNext;
@@ -241,7 +248,7 @@ public class PersonDaoImpl implements PersonDao {
         List<PhoneNumber> buffer = mapOfPhonesNumbers.get(person_id);
         List<PhoneNumber> resultList = new ArrayList<>(buffer.size());
         for (PhoneNumber pn : buffer) {
-            resultList.add(new PhoneNumber(pn.getPhone(), pn.getType()));
+            resultList.add(new PhoneNumber(pn.getId(), pn.getPhone(), pn.getType()));
         }
 
         person.setPhoneNumbers(resultList);

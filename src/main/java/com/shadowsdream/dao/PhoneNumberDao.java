@@ -9,7 +9,7 @@ import java.util.Set;
 public interface PhoneNumberDao {
     Map<Long, List<PhoneNumber>> getPhoneNumbersGroupedByPersonId();
     Set<Long> savePhoneNumbers(Long personId, List<PhoneNumber> phoneNumberList);
-    void remove(PhoneNumber phoneNumber);
-    void updatePhoneNumber(Long Id, PhoneNumber phoneNumber);
-
+    void updatePhoneNumber(PhoneNumber phoneNumber);
+    void removeAllPersonPhoneNumbers(Long personId);
+    void removePhoneNumber(Long id);
 }
