@@ -1,6 +1,6 @@
 package com.shadowsdream.service;
 
-import com.shadowsdream.model.Person;
+import com.shadowsdream.model.enums.Person;
 import com.shadowsdream.model.PhoneNumber;
 
 import java.util.List;

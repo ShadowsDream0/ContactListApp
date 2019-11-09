@@ -1,13 +1,11 @@
 package com.shadowsdream;
 
-import com.shadowsdream.dao.PhoneNumberDao;
-import com.shadowsdream.dao.PhoneNumberDaoImpl;
 import com.shadowsdream.exception.DaoOperationException;
 import com.shadowsdream.exception.DeleteOperationException;
 import com.shadowsdream.exception.InsertOperationException;
 import com.shadowsdream.exception.UpdateOperationException;
-import com.shadowsdream.model.Gender;
-import com.shadowsdream.model.Person;
+import com.shadowsdream.model.enums.Gender;
+import com.shadowsdream.model.enums.Person;
 import com.shadowsdream.model.PhoneNumber;
 import com.shadowsdream.model.PhoneType;
 import com.shadowsdream.service.PersonService;
@@ -23,8 +21,6 @@ import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.Scanner;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class Runner {
 

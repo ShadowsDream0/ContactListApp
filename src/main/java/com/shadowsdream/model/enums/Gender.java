@@ -1,4 +1,4 @@
-package com.shadowsdream.model;
+package com.shadowsdream.model.enums;
 
 public enum Gender {
     MALE("male"),

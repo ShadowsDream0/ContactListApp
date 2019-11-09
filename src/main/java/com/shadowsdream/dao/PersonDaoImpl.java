@@ -4,8 +4,8 @@ import com.shadowsdream.exception.DaoOperationException;
 import com.shadowsdream.exception.DeleteOperationException;
 import com.shadowsdream.exception.InsertOperationException;
 import com.shadowsdream.exception.UpdateOperationException;
-import com.shadowsdream.model.Gender;
-import com.shadowsdream.model.Person;
+import com.shadowsdream.model.enums.Gender;
+import com.shadowsdream.model.enums.Person;
 import com.shadowsdream.model.PhoneNumber;
 
 import javax.sql.DataSource;
