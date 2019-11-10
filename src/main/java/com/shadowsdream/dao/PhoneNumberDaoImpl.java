@@ -5,7 +5,7 @@ import com.shadowsdream.exception.DeleteOperationException;
 import com.shadowsdream.exception.InsertOperationException;
 import com.shadowsdream.exception.UpdateOperationException;
 import com.shadowsdream.model.PhoneNumber;
-import com.shadowsdream.model.PhoneType;
+import com.shadowsdream.model.enums.PhoneType;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
@@ -17,7 +17,7 @@ import java.util.*;
 public class PhoneNumberDaoImpl implements PhoneNumberDao{
     private DataSource dataSource;
 
-    private final String SELECT_ALL_SQL_STATEMENT = "SELECT * FROM phones;";
+    private final String SELECT_ALL_SQL_STATEMENT = "SELECT * FROM phones ORDER BY person_id;";
 
     private final String INSERT_SQL_STATEMENT = "INSERT INTO phones (phone_number, phone_type, person_id)" +
                                                 " VALUES (?, CAST(? AS TYPE_OF_PHONE), ?);";

@@ -5,7 +5,7 @@ import com.shadowsdream.exception.DeleteOperationException;
 import com.shadowsdream.exception.InsertOperationException;
 import com.shadowsdream.exception.UpdateOperationException;
 import com.shadowsdream.model.enums.Gender;
-import com.shadowsdream.model.enums.Person;
+import com.shadowsdream.model.Person;
 import com.shadowsdream.model.PhoneNumber;
 
 import javax.sql.DataSource;
@@ -30,7 +30,7 @@ public class PersonDaoImpl implements PersonDao {
                                                                 "email = ? " +
                                                             "WHERE id = ?;";
 
-    private static final String SELECT_ALL_SQL_STATEMENT = "SELECT * FROM persons;";
+    private static final String SELECT_ALL_SQL_STATEMENT = "SELECT * FROM persons ORDER BY id;";
 
     private static final String SELECT_BY_ID_SQL_STATEMENT = "SELECT * FROM persons WHERE id = ?;";
 
@@ -241,7 +241,7 @@ public class PersonDaoImpl implements PersonDao {
 
         //ignore person with no phone numbers
         Long person_id = person.getId();
-        if (!mapOfPhonesNumbers.containsKey(person.getId())) {
+        if (mapOfPhonesNumbers.get(person_id) == null) {
             return;
         }
 

@@ -1,5 +1,6 @@
 package com.shadowsdream.model;
 
+import com.shadowsdream.model.enums.PhoneType;
 import lombok.*;
 
 @Getter
