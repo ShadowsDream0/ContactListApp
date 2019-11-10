@@ -1,3 +1,5 @@
 .idea
 target/
+logs/
+libs/
 contact_list_app.iml

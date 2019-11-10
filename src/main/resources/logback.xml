@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+    <property name="LOG_PATH"
+              value="logs"/>
+
+    <property name="LOG_PATTERN_FILE"
+              value="%d{dd-MM-yyyy HH:mm:ss.SSS} [%thread] %-5level %logger{36}.%M - %msg%n"/>
+
+
+    <appender name="FILE" class="ch.qos.logback.core.FileAppender">
+        <file>${LOG_PATH}/contact_list_app.log</file>
+        <append>true</append>
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <pattern>${LOG_PATTERN_FILE}</pattern>
+        </encoder>
+    </appender>
+
+    <root level="debug">
+        <appender-ref ref="FILE"/>
+    </root>
+
+    <logger name="com.shadowsdream.service.PersonServiceImpl" level="info" additivity="false">
+        <appender-ref ref="FILE"/>
+    </logger>
+
+    <logger name="com.shadowsdream.dao.*" level="debug" additivity="false">
+        <appender-ref ref="FILE"/>
+    </logger>
+
+    <logger name="com.shadowsdream.util.FileReader" level="debug" additivity="false">
+        <appender-ref ref="FILE"/>
+    </logger>
+
+</configuration>

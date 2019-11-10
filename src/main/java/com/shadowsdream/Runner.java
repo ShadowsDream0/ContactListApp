@@ -17,15 +17,17 @@ import com.shadowsdream.util.FileReader;
 import com.shadowsdream.util.JdbcUtil;
 
 import javax.sql.DataSource;
+import java.net.URI;
+import java.nio.file.FileSystem;
+import java.nio.file.FileSystems;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Scanner;
+import java.util.*;
 import java.util.regex.Pattern;
 
 public class Runner {
@@ -37,6 +39,8 @@ public class Runner {
     private static PersonService personService;
 
     private static final Scanner scanner = new Scanner(System.in);
+
+    private static String dataBase;
 
     private static final String menu =
             "|======================================================================|\n" +
@@ -54,6 +58,13 @@ public class Runner {
             "->";
 
     public static void main(String[] args) {
+
+        if(args.length != 1) {
+            System.err.println("Usage: java -jar cl-ap.jar <database_name>");
+            System.exit(1);
+        }
+
+        dataBase = args[0];
 
         initializeDataBase();
 
@@ -333,6 +344,7 @@ public class Runner {
         return phoneNumberDto;
     }
 
+
     private static List<PhoneNumberDto> scanPhoneNumbers() {
         boolean done = false;
 
@@ -453,7 +465,7 @@ public class Runner {
 
     private static void initDatasource() {
         dataSource = JdbcUtil.createPostgresDataSource(
-                "jdbc:postgresql://localhost:5432/contact_list_db", "postgres", "Password1");
+                "jdbc:postgresql://localhost:5432/" + dataBase, "postgres", "Password1");
     }
 
     private static void initPersonservice() {
