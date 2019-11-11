@@ -13,6 +13,7 @@ import com.shadowsdream.model.PhoneNumber;
 import com.shadowsdream.model.enums.PhoneType;
 import com.shadowsdream.service.PersonService;
 import com.shadowsdream.service.PersonServiceImpl;
+import com.shadowsdream.service.PrettyPrinter;
 import com.shadowsdream.util.FileReader;
 import com.shadowsdream.util.JdbcUtil;
 
@@ -42,20 +43,6 @@ public class Runner {
 
     private static String dataBase;
 
-    private static final String menu =
-            "|======================================================================|\n" +
-            "|                   Select an action on contact list                   |\n" +
-            "|----------------------------------------------------------------------|\n" +
-            "|                        <1> - show all contacts                       |\n" +
-            "|                        <2> - view details of contact                 |\n" +
-            "|                        <3> - remove contact                          |\n" +
-            "|                        <4> - remove phone number                     |\n" +
-            "|                        <5> - save contact                            |\n" +
-            "|                        <6> - update contact                          |\n" +
-            "|                        <7> - update phone number                     |\n" +
-            "|                        <8> - exit                                    |\n" +
-            "|======================================================================|\n" +
-            "->";
 
     public static void main(String[] args) {
 
@@ -70,12 +57,12 @@ public class Runner {
 
         String choice = null;
         while (true) {
-            System.out.print(menu);
+            PrettyPrinter.printMenu();
 
             choice = scanner.nextLine();
             switch (choice) {
                 case "1":
-                    findAll();
+                    showAll();
                     break;
                 case "2":
                     showDetails();
@@ -103,7 +90,8 @@ public class Runner {
                     System.out.println("You should choose number from the menu below\n");
                     break;
             }
-            System.out.println("\n--------------------------\nPress any key to continue\n--------------------------");
+
+            PrettyPrinter.printPressAnyKey();
             scanner.nextLine();
 
         }
@@ -112,8 +100,10 @@ public class Runner {
 
     private static void savePerson() {
         try {
-            personService.save(getPersonFromInputForSaving());
+            PersonSaveDto personSaveDto = getPersonFromInputForSaving();
+            personService.save(personSaveDto);
             System.out.println("Contact was saved successfully");
+            PrettyPrinter.printPersonInfo(personSaveDto);
         } catch (InsertOperationException e) {
             System.out.println("Could not save contact because of: " + e.getMessage());
         }
@@ -121,7 +111,7 @@ public class Runner {
 
 
     private static PersonSaveDto getPersonFromInputForSaving() {
-        final String menu = "Provide information for a new contact\n";
+        System.out.println("Provide information for a new contact:");
 
         PersonSaveDto personSaveDto = new PersonSaveDto();
 
@@ -190,18 +180,12 @@ public class Runner {
 
         Long id = scanLong();
 
-        System.out.println(personService.findById(id));
+        PrettyPrinter.printPersonInfo(personService.findById(id));
     }
 
 
-    private static void findAll() {
-        personService.findAll().stream()
-                .map(contact -> new StringBuilder(contact.getId().toString())
-                        .append(" ")
-                        .append(contact.getFirstName())
-                        .append(" ")
-                        .append(contact.getLastName()))
-                .forEach(System.out::println);
+    private static void showAll() {
+        personService.findAll().forEach(PrettyPrinter::printPersonInfo);
     }
 
 
@@ -214,7 +198,8 @@ public class Runner {
 
         try {
             personService.updatePerson(personDto);
-            System.out.println("Contact updated successfully");
+            System.out.println("Contact updated successfully:");
+            PrettyPrinter.printPersonInfo(personDto);
         } catch (UpdateOperationException e) {                  //does exception name violates encapsulation?
             System.out.println("Could not update person because of: " + e.getMessage());
         }
@@ -237,8 +222,10 @@ public class Runner {
             switch (choice) {
                 case "1":
                     try {
-                        personService.updatePhoneNumber(getUpdatedPhoneNumber(dtoPhoneNumbers));
+                        PhoneNumberDto updatedPhoneNumberDto = getUpdatedPhoneNumber(dtoPhoneNumbers);
+                        personService.updatePhoneNumber(updatedPhoneNumberDto);
                         System.out.println("Phone number has been set successfully");
+                        PrettyPrinter.printPhoneNumber(updatedPhoneNumberDto);
                     } catch (UpdateOperationException e) {
                         System.out.println("Could not update phone number because of: " + e.getMessage());
                     }
@@ -308,7 +295,7 @@ public class Runner {
                     System.out.println("City has been set successfully");
                     break;
                 case "6":
-                    System.out.println("Enter email\n->");
+                    System.out.print("Enter email\n->");
                     String email = scanner.nextLine();
                     personDto.setEmail(email);
                     System.out.println("Email has been set successfully");
@@ -381,7 +368,9 @@ public class Runner {
                     } while (!successfulInput);
 
                     dtoPhoneNumbers.add(phoneNumberDto);
-                    System.out.println("Phone number has been set successfully");
+                    System.out.println("Phone number has been set successfully:");
+                    PrettyPrinter.printPhoneNumber(phoneNumberDto);
+
                     break;
                 case "2":
                     done = true;

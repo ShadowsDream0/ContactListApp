@@ -30,7 +30,8 @@ public class FileReader {
      * @return string that holds whole file content
      */
     public static String readWholeFileFromResources(String fileName) {
-        try (Stream<String> fileLinesStream = new BufferedReader(new InputStreamReader(getInputStreamFromFile(fileName))).lines()) {
+        try (Stream<String> fileLinesStream = new BufferedReader(
+                new InputStreamReader(getInputStreamFromFile(fileName))).lines()) {
             return fileLinesStream.collect(joining("\n"));
         }
     }
