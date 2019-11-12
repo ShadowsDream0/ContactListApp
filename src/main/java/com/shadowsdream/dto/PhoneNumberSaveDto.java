@@ -18,7 +18,7 @@ public class PhoneNumberSaveDto {
 
     public PhoneNumberSaveDto(){}
 
-    public PhoneNumberSaveDto(Long id, String phone, PhoneType type) {
+    public PhoneNumberSaveDto(String phone, PhoneType type) {
         Objects.requireNonNull(phone, "Argument phone must not be null");
         Objects.requireNonNull(type, "Argument type must not be null");
 

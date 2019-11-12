@@ -42,7 +42,7 @@ public class PrettyPrinter {
                             "City: " + person.getCity() + "\n" +
                             "Email: " + person.getEmail()
         );
-        printPhoneNumbers(person.getPhoneNumbers());
+        printPhoneNumberSaveDtos(person.getPhoneNumbers());
     }
 
     public static void printPersonInfo(PersonViewDto person) {
@@ -98,7 +98,7 @@ public class PrettyPrinter {
         System.out.println("\n--------------------------\nPress any key to continue\n--------------------------");
     }
 
-    private static void printPhoneNumbers(List<PhoneNumberDto> phoneNumberDtoList) {
+    private static void printPhoneNumberSaveDtos(List<PhoneNumberDto> phoneNumberDtoList) {
         if (phoneNumberDtoList == null) {
             return;
         }

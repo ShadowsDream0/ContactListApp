@@ -213,10 +213,13 @@ public class Runner {
             // read person data from file
             List<String[]> linesWithPersonData = FileReader.getListOfStringArraysFromPath(filePath);
 
+            ContactListLogger.getLog().debug("Lines with person data got: " + linesWithPersonData.toString());
+
             // save contacts to db
             PersonSaveDto personSaveDto = null;
             int sizeOfList = linesWithPersonData.size();
-            for(int line = 0; line < sizeOfList; line++) {
+            int line = 0;
+            for(; line < sizeOfList; line++) {
                 try {
                     personSaveDto = getPersonSaveDtoFromData(parsePersonData(linesWithPersonData.get(line)));
                 } catch (IOException e) {
@@ -224,10 +227,12 @@ public class Runner {
                     break;
                 }
                 personService.save(personSaveDto);
-                line++;
             }
 
-            successfulInput = true;
+            // exit successfully if all lines were read
+            if (line == sizeOfList) {
+                successfulInput = true;
+            }
 
         } while (!successfulInput);
 
@@ -260,7 +265,7 @@ public class Runner {
                                 .phone(workPhoneNumber)
                                 .type(PhoneType.WORK)
                                 .build());
-        } else if (!homePhoneNumber.isEmpty()) {
+        if (!homePhoneNumber.isEmpty()) {
             phoneNumberDtos.add(PhoneNumberSaveDto.builder()
                                 .phone(homePhoneNumber)
                                 .type(PhoneType.HOME)
