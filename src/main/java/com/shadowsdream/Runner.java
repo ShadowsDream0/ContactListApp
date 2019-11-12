@@ -199,42 +199,39 @@ public class Runner {
         boolean successfulInput = false;
         String fileName = null;
         Path filePath = null;
+
         do {
             System.out.println("Enter file path");
             fileName = scanner.nextLine();
             filePath = Path.of(fileName);
             if (!(Files.exists(filePath))) {
                 System.err.println("You must enter valid path to the file");
-                continue;
-            }
-
-            ContactListLogger.getLog().debug("Path to file got from input: " + filePath);
-
-            // read person data from file
-            List<String[]> linesWithPersonData = FileReader.getListOfStringArraysFromPath(filePath);
-
-            ContactListLogger.getLog().debug("Lines with person data got: " + linesWithPersonData.toString());
-
-            // save contacts to db
-            PersonSaveDto personSaveDto = null;
-            int sizeOfList = linesWithPersonData.size();
-            int line = 0;
-            for(; line < sizeOfList; line++) {
-                try {
-                    personSaveDto = getPersonSaveDtoFromData(parsePersonData(linesWithPersonData.get(line)));
-                } catch (IOException e) {
-                    System.err.println("Corrupted data on line " + line + ": " + e.getMessage());
-                    break;
-                }
-                personService.save(personSaveDto);
-            }
-
-            // exit successfully if all lines were read
-            if (line == sizeOfList) {
+            } else {
                 successfulInput = true;
             }
 
         } while (!successfulInput);
+
+        ContactListLogger.getLog().debug("Path to file got from input: " + filePath);
+
+        // read person data from file
+        List<String[]> linesWithPersonData = FileReader.getListOfStringArraysFromPath(filePath);
+
+        ContactListLogger.getLog().debug("Lines with person data got: " + linesWithPersonData.toString());
+
+        // save contacts to db
+        PersonSaveDto personSaveDto = null;
+        int sizeOfList = linesWithPersonData.size();
+        for(int line = 0 ; line < sizeOfList; line++) {
+            try {
+                personSaveDto = getPersonSaveDtoFromData(parsePersonData(linesWithPersonData.get(line)));
+            } catch (IOException e) {
+                System.err.println("Import failed on line " + (line + 1) + ". Cause: " + e.getMessage());
+                System.out.println("Exiting...");
+                System.exit(1);
+            }
+            personService.save(personSaveDto);
+        }
 
         System.out.println("Contacts have been imported successfully");
     }
@@ -262,14 +259,16 @@ public class Runner {
 
         if (!workPhoneNumber.isEmpty()) {
             phoneNumberDtos.add(PhoneNumberSaveDto.builder()
-                                .phone(workPhoneNumber)
-                                .type(PhoneType.WORK)
-                                .build());
+                    .phone(workPhoneNumber)
+                    .type(PhoneType.WORK)
+                    .build());
+        }
+
         if (!homePhoneNumber.isEmpty()) {
             phoneNumberDtos.add(PhoneNumberSaveDto.builder()
-                                .phone(homePhoneNumber)
-                                .type(PhoneType.HOME)
-                                .build());
+                    .phone(homePhoneNumber)
+                    .type(PhoneType.HOME)
+                    .build());
         }
 
         return phoneNumberDtos;
@@ -288,7 +287,7 @@ public class Runner {
         Map<String, String> mapPersonData = new HashMap<>(8);
         for(int i = 0; i < keys.length; i++) {
             if(personData[i] == null) {
-                throw new IOException("person data contains null reference at " + (i + 1) + " position");
+                throw new IOException("person data contains null reference at " + (i + 1) + " index");
             } else {
                 mapPersonData.put(keys[i], personData[i]);
             }
