@@ -1,9 +1,6 @@
 package com.shadowsdream.service;
 
-import com.shadowsdream.dto.PersonDto;
-import com.shadowsdream.dto.PersonSaveDto;
-import com.shadowsdream.dto.PersonViewDto;
-import com.shadowsdream.dto.PhoneNumberDto;
+import com.shadowsdream.dto.*;
 
 import java.util.List;
 import java.util.Objects;
@@ -23,7 +20,9 @@ public class PrettyPrinter {
             "|                        <5> - save contact                            |\n" +
             "|                        <6> - update contact                          |\n" +
             "|                        <7> - update phone number                     |\n" +
-            "|                        <8> - exit                                    |\n" +
+            "|                        <8> - import contacts from file               |\n" +
+            "|        <9> - export contacts from contact list (not implemented)     |\n" +
+            "|                        <10> - exit                                   |\n" +
             "|======================================================================|\n" +
             "->";
 
@@ -71,15 +70,27 @@ public class PrettyPrinter {
         printPhoneNumbers(person.getPhoneNumbers());
     }
 
-    public static void printPhoneNumber(PhoneNumberDto phoneNumberDto) {
-        if (phoneNumberDto == null) {
+    public static void printPhoneNumber(PhoneNumberDto phoneNumber) {
+        if (phoneNumber == null) {
             return;
         }
 
         System.out.println(
-                            "ID: " + phoneNumberDto.getId() + "; " +
-                            "number: " + phoneNumberDto.getPhone() + " (" +
-                            phoneNumberDto.getType() + ")"
+                            "ID: " + phoneNumber.getId() + "; " +
+                            "number: " + phoneNumber.getPhone() + " (" +
+                                    phoneNumber.getType() + ")"
+        );
+    }
+
+
+    public static void printPhoneNumber(PhoneNumberSaveDto phoneNumber) {
+        if (phoneNumber == null) {
+            return;
+        }
+
+        System.out.println(
+                        "number: " + phoneNumber.getPhone() + " (" +
+                        phoneNumber.getType() + ")"
         );
     }
 
@@ -88,6 +99,16 @@ public class PrettyPrinter {
     }
 
     private static void printPhoneNumbers(List<PhoneNumberDto> phoneNumberDtoList) {
+        if (phoneNumberDtoList == null) {
+            return;
+        }
+        System.out.println("- - - - - - - Phone numbers - - - - - - - - -");
+        phoneNumberDtoList.forEach(PrettyPrinter::printPhoneNumber);
+        System.out.println("- - - - - - - - - - - - - -  - - - - - - - - -");
+
+    }
+
+    private static void printPhoneNumbers(List<PhoneNumberSaveDto> phoneNumberDtoList) {
         if (phoneNumberDtoList == null) {
             return;
         }
