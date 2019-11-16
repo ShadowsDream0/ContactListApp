@@ -6,19 +6,14 @@ import com.shadowsdream.dto.PhoneNumberDto;
 import com.shadowsdream.dto.PhoneNumberSaveDto;
 import com.shadowsdream.dto.mappers.PhoneNumberDtoMapper;
 import com.shadowsdream.dto.mappers.PhoneNumberSaveDtoMapper;
-import com.shadowsdream.exception.DaoOperationException;
-import com.shadowsdream.exception.DeleteOperationException;
-import com.shadowsdream.exception.InsertOperationException;
-import com.shadowsdream.exception.UpdateOperationException;
+import com.shadowsdream.exception.*;
+import com.shadowsdream.model.Person;
 import com.shadowsdream.model.enums.Gender;
 import com.shadowsdream.model.enums.PhoneType;
-import com.shadowsdream.service.PersonService;
-import com.shadowsdream.service.PersonServiceImpl;
-import com.shadowsdream.service.PrettyPrinter;
+import com.shadowsdream.service.*;
 import com.shadowsdream.util.FileReader;
 import com.shadowsdream.util.JdbcUtil;
 import com.shadowsdream.util.logging.ContactListLogger;
-import org.mapstruct.Mapper;
 import org.mapstruct.factory.Mappers;
 
 import javax.sql.DataSource;
@@ -29,7 +24,6 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.time.LocalDate;
-import java.time.format.DateTimeParseException;
 import java.util.*;
 
 public class Runner {
@@ -39,6 +33,7 @@ public class Runner {
 
     private static DataSource dataSource;
     private static PersonService personService;
+    private static ValidatorService validatorService;
 
     private static final Scanner scanner = new Scanner(System.in);
 
@@ -54,7 +49,7 @@ public class Runner {
 
         dataBase = args[0];
 
-        initializeDataBase();
+        initializeAll();
 
         String choice = null;
         while (true) {
@@ -89,11 +84,11 @@ public class Runner {
                 case "9":
                     break;
                 case "10":
-                    System.out.println("Exiting...");
+                    PrettyPrinter.print("Exiting...\n");
                     System.exit(0);
                     break;
                 default:
-                    System.out.println("You should choose number from the menu below\n");
+                    PrettyPrinter.print("You should choose number from the menu below\n");
                     break;
             }
 
@@ -107,90 +102,141 @@ public class Runner {
         try {
             PersonSaveDto personSaveDto = getPersonFromInputForSaving();
             personService.save(personSaveDto);
-            System.out.println("Contact was saved successfully");
+            PrettyPrinter.print("Contact was saved successfully\n");
             PrettyPrinter.printPersonInfo(personSaveDto);
-        } catch (InsertOperationException e) {
-            System.out.println("Could not save contact because of: " + e.getMessage());
+        } catch (PersonServiceException e) {
+            PrettyPrinter.print("Could not save contact because of: " + e.getMessage() + "\n");
         }
     }
 
 
     private static PersonSaveDto getPersonFromInputForSaving() {
-        System.out.println("Provide information for a new contact:");
+        PrettyPrinter.print("Provide information for a new contact:\n");
 
         PersonSaveDto personSaveDto = new PersonSaveDto();
 
-        System.out.print("Enter first name\n->");
-        String firstName = scanner.nextLine();
-        personSaveDto.setFirstName(firstName);
-        System.out.println("First name has been set successfully");
+        // get first name
+        do {
+            PrettyPrinter.print("Enter first name\n->");
+            String firstName = scanner.nextLine();
+            try {
+                validatorService.validateProperName(firstName);
+            } catch (InvalidInputException e) {
+                PrettyPrinter.print("You failed to enter correct first name because " + e.getMessage() + "\n");
+                continue;
+            }
+            personSaveDto.setFirstName(firstName);
+            PrettyPrinter.print("First name has been set successfully\n");
+            break;
+        } while (true);
 
-        System.out.print("Enter last name\n->");
-        String lastName = scanner.nextLine();
-        personSaveDto.setLastName(lastName);
-        System.out.println("Last name has been set successfully");
+        // get last name
+        do {
+            PrettyPrinter.print("Enter last name\n->");
+            String lastName = scanner.nextLine();
+            try {
+                validatorService.validateProperName(lastName);
+            } catch (InvalidInputException e) {
+                PrettyPrinter.print("You failed to enter correct last name because " + e.getMessage() + "\n");
+                continue;
+            }
+            personSaveDto.setLastName(lastName);
+            PrettyPrinter.print("Last name has been set successfully\n");
+            break;
+        } while (true);
 
+        // get gender
         personSaveDto.setGender(scanGender());
-        System.out.println("Gender has been set successfully");
+        PrettyPrinter.print("Gender has been set successfully\n");
 
+        // get birthday
         personSaveDto.setBirthday(scanBirthday());
-        System.out.println("Birthday has been set successfully");
+        PrettyPrinter.print("Birthday has been set successfully\n");
 
-        System.out.print("Enter city\n->");
-        String city = scanner.nextLine();
-        personSaveDto.setCity(city);
-        System.out.println("City has been set successfully");
+        // get city
+        do {
+            PrettyPrinter.print("Enter city\n->");
+            String city = scanner.nextLine();
+            try {
+                validatorService.validateProperName(city);
+            } catch (InvalidInputException e) {
+                PrettyPrinter.print("You failed to enter correct name of the city because " + e.getMessage() + "\n");
+                continue;
+            }
+            personSaveDto.setCity(city);
+            PrettyPrinter.print("City has been set successfully\n");
+            break;
+        } while (true);
 
-        System.out.println("Enter email\n->");
-        String email = scanner.nextLine();
-        personSaveDto.setEmail(email);
-        System.out.println("Email has been set successfully");
+        // get email
+        do {
+            PrettyPrinter.print("Enter email\n->");
+            String email = scanner.nextLine();
+            try {
+                validatorService.validateEmail(email);
+            } catch (InvalidInputException e) {
+                PrettyPrinter.print("You failed to enter correct email because " + e.getMessage() + "\n");
+                continue;
+            }
+            personSaveDto.setEmail(email);
+            PrettyPrinter.print("Email has been set successfully\n");
+            break;
+        } while (true);
 
+        // get phone numbers
         personSaveDto.setPhoneNumbers(scanPhoneNumbers());
-        System.out.println("All phone numbers have been set successfully");
+        PrettyPrinter.print("All phone numbers have been set successfully\n");
 
         return personSaveDto;
     }
 
 
     private static void removePhoneNumber() {
-        System.out.println("Enter phone id which you want to delete from contact list");
+        PrettyPrinter.print("Enter phone id which you want to delete from contact list\n");
         Long id = scanLong();
 
         try {
             personService.removePhoneNumber(id);
-            System.out.println("Phone number was successfully removed from contact list");
-        } catch (DeleteOperationException e) {                     //does exception name violates encapsulation?
-            System.out.println("Could not remove phone number list because of: " + e.getMessage());
+            PrettyPrinter.print("Phone number was successfully removed from contact list\n");
+        } catch (PersonServiceException e) {
+            PrettyPrinter.print("Could not remove phone number list because of: " + e.getMessage() + "\n");
         }
     }
 
 
     private static void removeContact() {
 
-        System.out.println("Enter person id who you want to delete from contact list");
+        PrettyPrinter.print("Enter person id who you want to delete from contact list\n");
         Long id = scanLong();
 
         try {
             personService.removePerson(id);
-            System.out.println("Contact was successfully removed from contact list");
-        } catch (DeleteOperationException e) {                     //does exception name violates encapsulation?
-            System.out.println("Could not remove contact list because of: " + e.getMessage());
+            PrettyPrinter.print("Contact was successfully removed from contact list\n");
+        } catch (PersonServiceException e) {
+            PrettyPrinter.print("Could not remove contact list because of: " + e.getMessage() + "\n");
         }
     }
 
 
     private static void showDetails() {
-        System.out.println("Enter person id to view contact details");
+        PrettyPrinter.print("Enter person id to view contact details\n");
 
         Long id = scanLong();
 
-        PrettyPrinter.printPersonInfo(personService.findById(id));
+        try {
+            PrettyPrinter.printPersonInfo(personService.findById(id));
+        } catch (PersonServiceException e) {
+            e.printStackTrace(); //todo: inform about error properly
+        }
     }
 
 
     private static void showAll() {
-        personService.findAll().forEach(PrettyPrinter::printPersonInfo);
+        try {
+            personService.findAll().forEach(PrettyPrinter::printPersonInfo);
+        } catch (PersonServiceException e) {
+            e.printStackTrace(); //todo: inform about error properly
+        }
     }
 
 
@@ -201,11 +247,11 @@ public class Runner {
         Path filePath = null;
 
         do {
-            System.out.println("Enter file path");
+            PrettyPrinter.print("Enter file path\n");
             fileName = scanner.nextLine();
             filePath = Path.of(fileName);
             if (!(Files.exists(filePath))) {
-                System.err.println("You must enter valid path to the file");
+                PrettyPrinter.print("You must enter valid path to the file\n");
             } else {
                 successfulInput = true;
             }
@@ -226,14 +272,19 @@ public class Runner {
             try {
                 personSaveDto = getPersonSaveDtoFromData(parsePersonData(linesWithPersonData.get(line)));
             } catch (IOException e) {
-                System.err.println("Import failed on line " + (line + 1) + ". Cause: " + e.getMessage());
-                System.out.println("Exiting...");
+                PrettyPrinter.print("Import failed on line " + (line + 1) + ". Cause: " + e.getMessage() + "\n");
+                PrettyPrinter.print("Exiting...\n");
                 System.exit(1);
             }
-            personService.save(personSaveDto);
+
+            try {
+                personService.save(personSaveDto);
+            } catch (PersonServiceException e) {
+                e.printStackTrace(); //todo: inform about error properly
+            }
         }
 
-        System.out.println("Contacts have been imported successfully");
+        PrettyPrinter.print("Contacts have been imported successfully\n");
     }
 
 
@@ -299,50 +350,62 @@ public class Runner {
 
     private static void updatePerson() {
 
-        System.out.print("Enter person id whose contact you want to update\n->");
+        PrettyPrinter.print("Enter person id whose contact you want to update\n->");
         Long id = scanLong();
 
-        PersonDto personDto = setPersonFromInputForUpdate(personService.findById(id));
+        PersonDto personDto = null;
+
+        try {
+            PersonDto bufferPersonDto = personService.findById(id);
+            personDto = setPersonFromInputForUpdate(bufferPersonDto);
+        } catch (PersonServiceException e) {
+            e.printStackTrace();
+        }
 
         try {
             personService.updatePerson(personDto);
-            System.out.println("Contact updated successfully:");
+            PrettyPrinter.print("Contact updated successfully:\n");
             PrettyPrinter.printPersonInfo(personDto);
-        } catch (UpdateOperationException e) {                  //does exception name violates encapsulation?
-            System.out.println("Could not update person because of: " + e.getMessage());
+        } catch (PersonServiceException e) {
+            PrettyPrinter.print("Could not update person because of: " + e.getMessage() + "\n");
         }
     }
 
 
     private static void updatePhoneNumbers() {
-        System.out.println("Enter person id whose phone number you want to update");
+        PrettyPrinter.print("Enter person id whose phone number you want to update\n");
         Long id = scanLong();
 
-        PersonDto personDto = personService.findById(id);
+        PersonDto personDto = null;
+        try {
+            personService.findById(id);
+        } catch (PersonServiceException e) {
+            e.printStackTrace();
+        }
 
         List<PhoneNumberDto> dtoPhoneNumbers = personDto.getPhoneNumbers();
 
         boolean done = false;
         do {
             // get new phone number from input
-            System.out.print("Select action:\n1 - update phone number\n2 - done\n->");
+            PrettyPrinter.print("Select action:\n1 - update phone number\n2 - done\n->");
             String choice = scanner.nextLine();
             switch (choice) {
                 case "1":
                     try {
                         PhoneNumberDto updatedPhoneNumberDto = getUpdatedPhoneNumber(dtoPhoneNumbers);
                         personService.updatePhoneNumber(updatedPhoneNumberDto);
-                        System.out.println("Phone number has been set successfully");
+                        PrettyPrinter.print("Phone number has been set successfully\n");
                         PrettyPrinter.printPhoneNumber(updatedPhoneNumberDto);
-                    } catch (UpdateOperationException e) {
-                        System.out.println("Could not update phone number because of: " + e.getMessage());
+                    } catch (PersonServiceException e) {
+                        PrettyPrinter.print("Could not update phone number because of: " + e.getMessage() + "\n");
                     }
                     break;
                 case "2":
                     done = true;
                     break;
                 default:
-                    System.out.println("You must choose from 2 options only");
+                    PrettyPrinter.print("You must choose from 2 options only\n");
                     break;
             }
         } while (!done);
@@ -372,47 +435,71 @@ public class Runner {
                 .build();
 
         do {
-            System.out.print(menu);
+            PrettyPrinter.print(menu);
 
             choice = scanner.nextLine();
             switch (choice) {
                 case "1":
-                    System.out.print("Enter first name\n->");
+                    PrettyPrinter.print("Enter first name\n->");
                     String firstName = scanner.nextLine();
+                    try {
+                        validatorService.validateProperName(firstName);
+                    } catch (InvalidInputException e) {
+                        PrettyPrinter.print("You failed to enter correct name " + e.getMessage() + "\n");
+                        continue;
+                    }
                     personDto.setFirstName(firstName);
-                    System.out.println("First name has been set successfully");
+                    PrettyPrinter.print("First name has been set successfully\n");
                     break;
                 case "2":
-                    System.out.print("Enter last name\n->");
+                    PrettyPrinter.print("Enter last name\n->");
                     String lastName = scanner.nextLine();
+                    try {
+                        validatorService.validateProperName(lastName);
+                    } catch (InvalidInputException e) {
+                        PrettyPrinter.print("You failed to enter correct last name " + e.getMessage() + "\n");
+                        continue;
+                    }
                     personDto.setLastName(lastName);
-                    System.out.println("Last name has been set successfully");
+                    PrettyPrinter.print("Last name has been set successfully\n");
                     break;
                 case "3":
                     personDto.setGender(scanGender());
-                    System.out.println("Gender has been set successfully");
+                    PrettyPrinter.print("Gender has been set successfully\n");
                     break;
                 case "4":
                     personDto.setBirthday(scanBirthday());
-                    System.out.println("Birthday has been set successfully");
+                    PrettyPrinter.print("Birthday has been set successfully\n");
                     break;
                 case "5":
-                    System.out.print("Enter city\n->");
+                    PrettyPrinter.print("Enter city\n->");
                     String city = scanner.nextLine();
+                    try {
+                        validatorService.validateProperName(city);
+                    } catch (InvalidInputException e) {
+                        PrettyPrinter.print("You failed to enter correct city name " + e.getMessage() + "\n");
+                        continue;
+                    }
                     personDto.setCity(city);
-                    System.out.println("City has been set successfully");
+                    PrettyPrinter.print("City has been set successfully\n");
                     break;
                 case "6":
-                    System.out.print("Enter email\n->");
+                    PrettyPrinter.print("Enter email\n->");
                     String email = scanner.nextLine();
+                    try {
+                        validatorService.validateProperName(email);
+                    } catch (InvalidInputException e) {
+                        PrettyPrinter.print("You failed to enter correct email " + e.getMessage() + "\n");
+                        continue;
+                    }
                     personDto.setEmail(email);
-                    System.out.println("Email has been set successfully");
+                    PrettyPrinter.print("Email has been set successfully\n");
                     break;
                 case "7":
                     successfulInput = true;
                     break;
                 default:
-                    System.out.print("You must choose a number from menu below\n");
+                    PrettyPrinter.print("You must choose a number from menu below\n");
                     break;
             }
         } while (!successfulInput);
@@ -422,10 +509,23 @@ public class Runner {
 
 
     private static PhoneNumberDto getUpdatedPhoneNumber(List<PhoneNumberDto> inputDtoPhoneNumbers) {
-        System.out.print("Enter phone number id\n->");
+        PrettyPrinter.print("Enter phone number id\n->");
         Long id = scanLong();
-        System.out.print("Enter new phone number (+x-xxx-xxx-xxxx)\n->");
-        String phoneNumber = scanner.nextLine();
+
+        String phoneNumber = null;
+        do {
+            PrettyPrinter.print("Enter new phone number (+x-xxx-xxx-xxxx)\n->");
+            phoneNumber = scanner.nextLine();
+            try {
+                validatorService.validatePhoneNumber(phoneNumber);
+            } catch (InvalidInputException e) {
+                PrettyPrinter.print("You failed to enter correct phone number " + e.getMessage() + "\n");
+                continue;
+            }
+            break;
+        } while (true);
+
+
         PhoneNumberDto phoneNumberDto = null;
 
         // find old phone number to be updated
@@ -447,18 +547,24 @@ public class Runner {
 
         do {
             // get new phone number from input
-            System.out.print("Select action:\n1 - save phone number\n2 - done\n->");
+            PrettyPrinter.print("Select action:\n1 - save phone number\n2 - done\n->");
             String choice = scanner.nextLine();
             switch (choice) {
                 case "1":
                     PhoneNumberSaveDto phoneNumberSaveDto = new PhoneNumberSaveDto();
-                    System.out.print("Enter phone number (+x-xxx-xxx-xxxx)\n->");
+                    PrettyPrinter.print("Enter phone number (+x-xxx-xxx-xxxx)\n->");
                     String phoneNumber = scanner.nextLine();
+                    try {
+                        validatorService.validatePhoneNumber(phoneNumber);
+                    } catch (InvalidInputException e) {
+                        PrettyPrinter.print("You failed to enter correct phone number because " + e.getMessage() + "\n");
+                        continue;
+                    }
                     phoneNumberSaveDto.setPhone(phoneNumber);
 
                     boolean successfulInput = false;
                     do {
-                        System.out.print("Enter phone type (1 - home, 2 - work)\n->");
+                        PrettyPrinter.print("Enter phone type (1 - home, 2 - work)\n->");
                         String typeNumber = scanner.nextLine();
                         switch (typeNumber) {
                             case "1":
@@ -470,15 +576,15 @@ public class Runner {
                                 successfulInput = true;
                                 break;
                             default:
-                                System.out.println("You must choose from 2 options only");
+                                PrettyPrinter.print("You must choose from 2 options only\n");
                                 break;
                         }
                     } while (!successfulInput);
 
                     dtoPhoneNumbers.add(phoneNumberSaveDto);
-                    System.out.println("Phone number has been set successfully:");
+                    PrettyPrinter.print("Phone number has been set successfully:\n");
 
-                    // bad code
+                    //todo: fix bad code
                     PhoneNumberSaveDtoMapper saveDtoMapper = Mappers.getMapper(PhoneNumberSaveDtoMapper.class);
                     PhoneNumberDtoMapper dtoMapper = Mappers.getMapper(PhoneNumberDtoMapper.class);
                     PrettyPrinter.printPhoneNumber(dtoMapper.toDto(saveDtoMapper.fromDto(phoneNumberSaveDto)));
@@ -488,7 +594,7 @@ public class Runner {
                     done = true;
                     break;
                 default:
-                    System.out.println("You must choose from 2 options only");
+                    PrettyPrinter.print("You must choose from 2 options only\n");
                     break;
             }
         } while (!done);
@@ -499,16 +605,17 @@ public class Runner {
 
     private static LocalDate scanBirthday() {
         LocalDate birthday = null;
-        boolean successfulInput = false;
         do {
-            System.out.print("Enter date of birth (yyyy-mm-dd)\n->");
+            PrettyPrinter.print("Enter date of birth (yyyy-mm-dd)\n->");
+            String birthdayString = scanner.nextLine();
             try {
-                birthday = LocalDate.parse(scanner.nextLine());
-                successfulInput = true;
-            } catch (DateTimeParseException e) {
-                System.out.println("You must enter valid date");
+               birthday = validatorService.validateAndGetBirthday(birthdayString);
+            } catch (InvalidInputException e) {
+                PrettyPrinter.print("You failed to enter correct date because " + e.getMessage() + "\n");
+                continue;
             }
-        } while (!successfulInput);
+            break;
+        } while (true);
 
         return  birthday;
     }
@@ -518,7 +625,7 @@ public class Runner {
         boolean successfulInput = false;
         Gender gender = null;
         do {
-            System.out.print("Choose number to select gender (1 - male, 2 - female, 3 - transgender\n->");
+            PrettyPrinter.print("Choose number to select gender (1 - male, 2 - female, 3 - transgender\n->");
             String choiceGender = scanner.nextLine();
 
             switch (choiceGender) {
@@ -535,7 +642,7 @@ public class Runner {
                     successfulInput = true;
                     break;
                 default:
-                    System.out.println("You must choose from 3 options only");
+                    PrettyPrinter.print("You must choose from 3 options only\n");
             }
         } while (!successfulInput);
         return gender;
@@ -550,18 +657,19 @@ public class Runner {
                 id = Long.parseLong(scanner.nextLine());
                 successfulInput = true;
             } catch (NumberFormatException e) {
-                System.out.println("You must enter a number");
+                PrettyPrinter.print("You must enter a number\n");
             }
         } while (!successfulInput);
         return id;
     }
 
 
-    private static void initializeDataBase() {
+    private static void initializeAll() {
         initDatasource();
-        initPersonservice();
         initTablesInDB();
         populateTablesInDB();
+        initPersonservice();
+        initvalidatorServiceService();
     }
 
     private static void initDatasource() {
@@ -581,7 +689,7 @@ public class Runner {
             statement.execute(createTablesSql);
             connection.commit();
         } catch (SQLException e) {
-            throw new DaoOperationException("Error during tables init.", e);
+            throw new RuntimeException("Error during tables initialization", e);
         }
     }
 
@@ -593,7 +701,11 @@ public class Runner {
             statement.execute(createTablesSql);
             connection.commit();
         } catch (SQLException e) {
-            throw new DaoOperationException("Error during tables population.", e);
+            throw new RuntimeException("Error during tables population.", e);
         }
+    }
+
+    public static void initvalidatorServiceService() {
+        validatorService = ValidatorServiceImpl.getInstance();
     }
 }

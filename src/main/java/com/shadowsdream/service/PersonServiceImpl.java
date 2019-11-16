@@ -4,6 +4,9 @@ package com.shadowsdream.service;
 import com.shadowsdream.dao.*;
 import com.shadowsdream.dto.*;
 import com.shadowsdream.dto.mappers.*;
+import com.shadowsdream.exception.DaoOperationException;
+import com.shadowsdream.exception.InsertOperationException;
+import com.shadowsdream.exception.PersonServiceException;
 import com.shadowsdream.util.logging.ContactListLogger;
 
 import org.mapstruct.factory.Mappers;
@@ -26,62 +29,95 @@ public class PersonServiceImpl implements PersonService {
     }
 
 
-    public Long save(PersonSaveDto personSaveDto) {
-        ContactListLogger.getLog().info("Started save() method...");
+    public Long save(PersonSaveDto personSaveDto) throws PersonServiceException{
+        ContactListLogger.getLog().info("Invoked save() method...");
 
         PersonSaveDtoMapper mapper = Mappers.getMapper(PersonSaveDtoMapper.class);
-
-        return personDao.save(mapper.fromDto(personSaveDto));
+        Long id = 0L;
+        try {
+            id = personDao.save(mapper.fromDto(personSaveDto));
+        } catch (InsertOperationException insertEx) {
+            throw new PersonServiceException("contact saving failed: " + insertEx.getMessage(), insertEx.getCause());
+        } catch (DaoOperationException daoEx) {
+            ContactListLogger.getLog().error("Critical error ocured: " + daoEx.getMessage() + " " + daoEx.getCause());
+            PrettyPrinter.printError("Server critical error. Exiting...");
+            System.exit(1);
+        }
+        return id;
     }
 
 
-    public List<PersonViewDto> findAll() {
-        ContactListLogger.getLog().info("Started findAll() method...");
+    public List<PersonViewDto> findAll() throws PersonServiceException {
+        ContactListLogger.getLog().info("Invoked findAll() method...");
 
         PersonViewDtoMapper mapper = Mappers.getMapper(PersonViewDtoMapper.class);
 
-        return personDao.findAll().stream()
-                    .map(mapper::toDto)
-                .collect(Collectors.toList());
+        try {
+            return personDao.findAll().stream()
+                        .map(mapper::toDto)
+                    .collect(Collectors.toList());
+        } catch (DaoOperationException e) {
+           throw new PersonServiceException("TODO"); //todo: inform about error properly
+        }
 
     }
 
 
-    public PersonDto findById(Long id) {
-        ContactListLogger.getLog().info("Started findById() method...");
+    public PersonDto findById(Long id) throws PersonServiceException {
+        ContactListLogger.getLog().info("Invoked findById() method...");
 
         PersonDtoMapper mapper = Mappers.getMapper(PersonDtoMapper.class);
 
-        return mapper.toDto(personDao.findById(id));
+        try {
+            return mapper.toDto(personDao.findById(id));
+        } catch (DaoOperationException e) {
+            throw new PersonServiceException("TODO"); // todo: inform about error properly
+        }
     }
 
 
-    public void updatePerson(PersonDto personDto) {
-        ContactListLogger.getLog().info("Started updatePerson() method...");
+    public void updatePerson(PersonDto personDto) throws PersonServiceException {
+        ContactListLogger.getLog().info("Invoked updatePerson() method...");
 
         PersonDtoMapper mapper = Mappers.getMapper(PersonDtoMapper.class);
 
-        personDao.updatePerson(mapper.fromDto(personDto));
+        try {
+            personDao.updatePerson(mapper.fromDto(personDto));
+        } catch (DaoOperationException e) {
+            throw new PersonServiceException("TODO"); // todo: inform about error properly
+        }
     }
 
 
-    public void updatePhoneNumber(PhoneNumberDto phoneNumberDto) {
-        ContactListLogger.getLog().info("Started updatePhoneNumber() method...");
+    public void updatePhoneNumber(PhoneNumberDto phoneNumberDto) throws PersonServiceException {
+        ContactListLogger.getLog().info("Invoked updatePhoneNumber() method...");
 
         PhoneNumberDtoMapper mapper = Mappers.getMapper(PhoneNumberDtoMapper.class);
 
-        personDao.updatePhoneNumber(mapper.fromDto(phoneNumberDto));
+        try {
+            personDao.updatePhoneNumber(mapper.fromDto(phoneNumberDto));
+        } catch (DaoOperationException e) {
+           throw new PersonServiceException("TODO"); // todo: inform about error properly
+        }
     }
 
 
-    public void removePerson(Long id) {
-        ContactListLogger.getLog().info("Started removePerson() method...");
-        personDao.removePerson(id);
+    public void removePerson(Long id) throws PersonServiceException {
+        ContactListLogger.getLog().info("Invoked removePerson() method...");
+        try {
+            personDao.removePerson(id);
+        } catch (DaoOperationException e) {
+            throw new PersonServiceException("TODO"); // todo: inform about error properly
+        }
     }
 
 
-    public void removePhoneNumber(Long id) {
-        ContactListLogger.getLog().info("Started removePhoneNumber() method...");
-        personDao.removePhoneNumber(id);
+    public void removePhoneNumber(Long id) throws PersonServiceException {
+        ContactListLogger.getLog().info("Invoked removePhoneNumber() method...");
+        try {
+            personDao.removePhoneNumber(id);
+        } catch (DaoOperationException e) {
+            throw new PersonServiceException("TODO"); // todo: inform about error properly
+        }
     }
 }
