@@ -13,10 +13,12 @@ import com.shadowsdream.model.enums.PhoneType;
 import com.shadowsdream.service.*;
 import com.shadowsdream.util.FileReader;
 import com.shadowsdream.util.JdbcUtil;
+import com.shadowsdream.util.PropertyLoader;
 import com.shadowsdream.util.logging.ContactListLogger;
 import org.mapstruct.factory.Mappers;
 
 import javax.sql.DataSource;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -34,6 +36,7 @@ public class Runner {
     private static DataSource dataSource;
     private static PersonService personService;
     private static ValidatorService validatorService;
+
 
     private static final Scanner scanner = new Scanner(System.in);
 
@@ -236,7 +239,7 @@ public class Runner {
     }
 
 
-    private static void importContacts() {
+    private static void importContacts() { // todo: make separate class
         // get path from input
         boolean successfulInput = false;
         String fileName = null;
@@ -257,9 +260,18 @@ public class Runner {
         ContactListLogger.getLog().debug("Path to file got from input: " + filePath);
 
         // read person data from file
-        List<String[]> linesWithPersonData = FileReader.getListOfStringArraysFromPath(filePath);
+        List<String[]> linesWithPersonData = null;
+        try {
+            linesWithPersonData = FileReader.getListOfStringArraysFromPath(filePath);
+        } catch (FileNotFoundException e) {
+            PrettyPrinter.printError("Could not find property file\n");
+            return;
+        } catch (IOException notFoundEx) {
+            PrettyPrinter.printError("Could not read file\n");
+            return;
+        }
 
-        ContactListLogger.getLog().debug("Lines with person data got: " + linesWithPersonData.toString());
+        ContactListLogger.getLog().debug("Lines with person data got: " + linesWithPersonData.get(0));
 
         // save contacts to db
         PersonSaveDto personSaveDto = null;
