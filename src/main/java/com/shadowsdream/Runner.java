@@ -105,7 +105,7 @@ public class Runner {
             PrettyPrinter.print("Contact was saved successfully\n");
             PrettyPrinter.printPersonInfo(personSaveDto);
         } catch (PersonServiceException e) {
-            PrettyPrinter.print("Could not save contact because of: " + e.getMessage() + "\n");
+            PrettyPrinter.printError("Could not save contact because of " + e.getMessage() + "\n");
         }
     }
 
@@ -199,7 +199,7 @@ public class Runner {
             personService.removePhoneNumber(id);
             PrettyPrinter.print("Phone number was successfully removed from contact list\n");
         } catch (PersonServiceException e) {
-            PrettyPrinter.print("Could not remove phone number list because of: " + e.getMessage() + "\n");
+            PrettyPrinter.print("Operation failed because " + e.getMessage() + "\n");
         }
     }
 
@@ -213,7 +213,7 @@ public class Runner {
             personService.removePerson(id);
             PrettyPrinter.print("Contact was successfully removed from contact list\n");
         } catch (PersonServiceException e) {
-            PrettyPrinter.print("Could not remove contact list because of: " + e.getMessage() + "\n");
+            PrettyPrinter.print("Operation failed because " + e.getMessage() + "\n");
         }
     }
 
@@ -226,17 +226,13 @@ public class Runner {
         try {
             PrettyPrinter.printPersonInfo(personService.findById(id));
         } catch (PersonServiceException e) {
-            e.printStackTrace(); //todo: inform about error properly
+            PrettyPrinter.print("Could not show information because " + e.getMessage());
         }
     }
 
 
     private static void showAll() {
-        try {
-            personService.findAll().forEach(PrettyPrinter::printPersonInfo);
-        } catch (PersonServiceException e) {
-            e.printStackTrace(); //todo: inform about error properly
-        }
+        personService.findAll().forEach(PrettyPrinter::printPersonInfo);
     }
 
 
@@ -280,7 +276,8 @@ public class Runner {
             try {
                 personService.save(personSaveDto);
             } catch (PersonServiceException e) {
-                e.printStackTrace(); //todo: inform about error properly
+                PrettyPrinter.print("Could not save contact because " + e.getMessage());
+                return;
             }
         }
 
@@ -359,16 +356,13 @@ public class Runner {
             PersonDto bufferPersonDto = personService.findById(id);
             personDto = setPersonFromInputForUpdate(bufferPersonDto);
         } catch (PersonServiceException e) {
-            e.printStackTrace();
+            PrettyPrinter.print("Could not show information because " + e.getMessage());
+            return;
         }
 
-        try {
-            personService.updatePerson(personDto);
-            PrettyPrinter.print("Contact updated successfully:\n");
-            PrettyPrinter.printPersonInfo(personDto);
-        } catch (PersonServiceException e) {
-            PrettyPrinter.print("Could not update person because of: " + e.getMessage() + "\n");
-        }
+        personService.updatePerson(personDto);
+        PrettyPrinter.print("Contact updated successfully:\n");
+        PrettyPrinter.printPersonInfo(personDto);
     }
 
 
@@ -380,7 +374,8 @@ public class Runner {
         try {
             personService.findById(id);
         } catch (PersonServiceException e) {
-            e.printStackTrace();
+            PrettyPrinter.print("Could not update because " + e.getMessage());
+            return;
         }
 
         List<PhoneNumberDto> dtoPhoneNumbers = personDto.getPhoneNumbers();

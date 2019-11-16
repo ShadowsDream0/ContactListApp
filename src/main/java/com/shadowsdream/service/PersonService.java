@@ -14,11 +14,11 @@ public interface PersonService {
 
     Long save(PersonSaveDto personSaveDto) throws PersonServiceException;
 
-    List<PersonViewDto> findAll() throws PersonServiceException;
+    List<PersonViewDto> findAll();
 
     PersonDto findById(Long id) throws PersonServiceException;
 
-    void updatePerson(PersonDto person) throws PersonServiceException;
+    void updatePerson(PersonDto person);
 
     void updatePhoneNumber(PhoneNumberDto phoneNumberDto) throws PersonServiceException;
 

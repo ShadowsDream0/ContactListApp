@@ -47,7 +47,7 @@ public class PhoneNumberDaoImpl implements PhoneNumberDao{
             resultSet = preparedStatement.executeQuery();
 
         } catch (SQLException e) {
-            throw new DaoOperationException("Error during selecting phone numbers by id", e);
+            throw new DaoOperationException("error during selecting phone numbers", e);
         }
 
         return getMapOfPhoneNumbers(resultSet);
@@ -105,11 +105,11 @@ public class PhoneNumberDaoImpl implements PhoneNumberDao{
             ContactListLogger.getLog().debug("Phone number before executing statement " + phoneNumber);
 
             if (executeUpdateAndHandleException(preparedStatement) != 1) {
-                throw new DaoOperationException("Error during updating table");
+                throw new DaoOperationException("error during updating phone number in the table");
             }
 
         } catch (SQLException e) {
-            throw new DaoOperationException("Error during updating table", e);
+            throw new DaoOperationException("error during updating phone number in the table", e);
         }
 
         ContactListLogger.getLog().debug("Returned from updatePhoneNumber() method in PhoneNumberDaoImpl...");
@@ -234,8 +234,12 @@ public class PhoneNumberDaoImpl implements PhoneNumberDao{
             PreparedStatement preparedStatement = connection.prepareStatement(sqlStatement);
             preparedStatement.setLong(1, id);
 
-            if(executeUpdateAndHandleException(preparedStatement) == 0) {
-                throw new DeleteOperationException("no such phone number");
+            try {
+                if (preparedStatement.executeUpdate() != 1) {
+                    throw new DeleteOperationException("no phone number for id: " + id);
+                }
+            } catch (SQLException e){
+                throw new DaoOperationException("error during deleting phone number with person id: " + id, e);
             }
 
         } catch (SQLException e) {
