@@ -2,10 +2,7 @@ package com.shadowsdream.util;
 
 import com.shadowsdream.util.logging.ContactListLogger;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -20,7 +17,6 @@ import static java.util.stream.Collectors.joining;
  * {@link FileReader} provides an API that allow to read whole file into a {@link String} by file name.
  */
 public class FileReader {
-
     /**
      * Returns a {@link String} that contains whole text from the file specified by name.
      *
@@ -36,12 +32,13 @@ public class FileReader {
         }
     }
 
-    public static List<String[]> getListOfStringArraysFromPath(Path filePath) {
+    public static List<String[]> getListOfStringArraysFromPath(Path filePath) throws IOException {
         Objects.requireNonNull(filePath, "Argument filepath must not be null");
+        String delimiter = PropertyLoader.getProperties(); // todo: fix this very bad decision
 
         List<String[]> listOfStringArrays = null;
         try (Stream<String> linesStream = Files.newBufferedReader(filePath).lines()) {
-            listOfStringArrays = linesStream.map(line -> line.split(";"))
+            listOfStringArrays = linesStream.map(line -> line.split(delimiter))
                     .collect(Collectors.toList());
         } catch (IOException e) {
             System.err.println("Error during reading file\nCaused by: " + e.getMessage());

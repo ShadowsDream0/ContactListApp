@@ -38,7 +38,7 @@ public class PhoneNumberDaoImpl implements PhoneNumberDao{
 
 
     @Override
-    public Map<Long, List<PhoneNumber>> getPhoneNumbersGroupedByPersonId() {
+    public Map<Long, List<PhoneNumber>> getPhoneNumbersGroupedByPersonId() throws DaoOperationException{
 
         ResultSet resultSet = null;
 
@@ -47,7 +47,7 @@ public class PhoneNumberDaoImpl implements PhoneNumberDao{
             resultSet = preparedStatement.executeQuery();
 
         } catch (SQLException e) {
-            throw new DaoOperationException("Error during selecting phone numbers by id", e);
+            throw new DaoOperationException("error during selecting phone numbers", e);
         }
 
         return getMapOfPhoneNumbers(resultSet);
@@ -55,7 +55,7 @@ public class PhoneNumberDaoImpl implements PhoneNumberDao{
 
 
     @Override
-    public Set<Long> savePhoneNumbers(Long personId, List<PhoneNumber> phoneNumberList) {
+    public Set<Long> savePhoneNumbers(Long personId, List<PhoneNumber> phoneNumberList) throws DaoOperationException {
 
         Objects.requireNonNull(personId, "Argument personId must not be null");
         Objects.requireNonNull(phoneNumberList, "Argument phoneNumberList must not be null");
@@ -70,8 +70,8 @@ public class PhoneNumberDaoImpl implements PhoneNumberDao{
 
 
     @Override
-    public void removeAllPersonPhoneNumbers(Long personId) {
-        ContactListLogger.getLog().debug("Started removeAllPersonPhoneNumbers() method in PhoneNumberDaoImpl...");
+    public void removeAllPersonPhoneNumbers(Long personId) throws DaoOperationException{
+        ContactListLogger.getLog().debug("Invoked removeAllPersonPhoneNumbers() method in PhoneNumberDaoImpl...");
         Objects.requireNonNull(personId, "Argumernt personId must not be null");
 
         remove(DELETE_ALL_SQL_STATEMENT, personId);
@@ -80,8 +80,8 @@ public class PhoneNumberDaoImpl implements PhoneNumberDao{
 
 
     @Override
-    public void removePhoneNumber(Long id) {
-        ContactListLogger.getLog().debug("Started removePhoneNumber() method in PhoneNumberDaoImpl...");
+    public void removePhoneNumber(Long id) throws DaoOperationException {
+        ContactListLogger.getLog().debug("Invoked removePhoneNumber() method in PhoneNumberDaoImpl...");
 
         Objects.requireNonNull(id, "Argument id must not be null");
 
@@ -93,8 +93,8 @@ public class PhoneNumberDaoImpl implements PhoneNumberDao{
 
 
     @Override
-    public void updatePhoneNumber(PhoneNumber phoneNumber) {
-        ContactListLogger.getLog().debug("Started updatePhoneNumber() method in PhoneNumberDaoImpl...");
+    public void updatePhoneNumber(PhoneNumber phoneNumber) throws DaoOperationException{
+        ContactListLogger.getLog().debug("Invoked updatePhoneNumber() method in PhoneNumberDaoImpl...");
 
         Objects.requireNonNull(phoneNumber, "Argument phoneNumber must not be null");
 
@@ -105,18 +105,20 @@ public class PhoneNumberDaoImpl implements PhoneNumberDao{
             ContactListLogger.getLog().debug("Phone number before executing statement " + phoneNumber);
 
             if (executeUpdateAndHandleException(preparedStatement) != 1) {
-                throw new UpdateOperationException("Failed to update phone number");
+                throw new DaoOperationException("error during updating phone number in the table");
             }
 
         } catch (SQLException e) {
-            throw new DaoOperationException("Error during updating table", e);
+            throw new DaoOperationException("error during updating phone number in the table", e);
         }
 
         ContactListLogger.getLog().debug("Returned from updatePhoneNumber() method in PhoneNumberDaoImpl...");
     }
 
 
-    private boolean setPhoneNumberFromResultSet(ResultSet resultSet, PhoneNumber phoneNumber) {
+    private boolean setPhoneNumberFromResultSet(ResultSet resultSet, PhoneNumber phoneNumber) 
+            throws DaoOperationException{
+        
         Objects.requireNonNull(resultSet, "Argument resultSet must not be null");
         Objects.requireNonNull(phoneNumber, "Argument phoneNumber must not be null");
 
@@ -130,14 +132,14 @@ public class PhoneNumberDaoImpl implements PhoneNumberDao{
             phoneNumber.setPhone(resultSet.getString("phone_number"));
             phoneNumber.setType(PhoneType.valueOf(resultSet.getString("phone_type").toUpperCase()));
         } catch (SQLException e) {
-            throw new DaoOperationException("Error during reading result set", e);
+            throw new DaoOperationException("error during reading result set", e);
         }
 
         return hasNext;
     }
 
 
-    private Map<Long, List<PhoneNumber>> getMapOfPhoneNumbers(ResultSet resultSet) {
+    private Map<Long, List<PhoneNumber>> getMapOfPhoneNumbers(ResultSet resultSet) throws DaoOperationException {
         Objects.requireNonNull(resultSet, "Argument resultSet must not null");
 
         Map<Long, List<PhoneNumber>> mapOfPhoneNumbers = new HashMap<>();
@@ -168,43 +170,46 @@ public class PhoneNumberDaoImpl implements PhoneNumberDao{
     }
 
 
-    private int executeUpdateAndHandleException(PreparedStatement preparedStatement) {
+    private int executeUpdateAndHandleException(PreparedStatement preparedStatement) throws DaoOperationException {
         Objects.requireNonNull(preparedStatement, "Argument preparedStatement must not be null");
 
         try {
             return preparedStatement.executeUpdate();
         } catch (SQLException e) {
-            throw new DaoOperationException("Error during executing update on prepared statement", e);
+            throw new DaoOperationException("Error during executing update", e);
         }
     }
 
 
-    private Long savePhoneNumber(Long personId, PhoneNumber phoneNumber) {
+    private Long savePhoneNumber(Long personId, PhoneNumber phoneNumber) throws DaoOperationException {
         try(Connection connection = dataSource.getConnection()) {
             PreparedStatement preparedStatement = connection.prepareStatement(INSERT_SQL_STATEMENT,
                                                     PreparedStatement.RETURN_GENERATED_KEYS);
             setPreparedStatement(preparedStatement, phoneNumber, personId);
 
             if (executeUpdateAndHandleException(preparedStatement) != 1) {
-                throw new InsertOperationException("phone number already exists");
+                throw new InsertOperationException("one of the contacts already has such phone number");
             }
 
 
             ResultSet generatedKey = preparedStatement.getGeneratedKeys();
+            long id = 0L;
             if (generatedKey.next()) {
-                long id = generatedKey.getLong("id");
+                 id = generatedKey.getLong("id");
                 return id;
             } else {
-                throw new DaoOperationException("No Id returned after save book");
+                throw new DaoOperationException("no such id " + id + " in database");
             }
 
         } catch (SQLException e) {
-            throw new DaoOperationException("Error during saving phone number");
+            throw new DaoOperationException("Error during saving phone number", e);
         }
     }
 
 
-    private int setPreparedStatement(PreparedStatement preparedStatement, PhoneNumber phoneNumber, Long id) {
+    private int setPreparedStatement(PreparedStatement preparedStatement, PhoneNumber phoneNumber, Long id)
+            throws DaoOperationException {
+
         Objects.requireNonNull(preparedStatement, "Argument preparedStatement must not be null");
         Objects.requireNonNull(phoneNumber, "Argument phoneNumber must not be null");
         Objects.requireNonNull(id, "Argument id must not be null");
@@ -222,15 +227,19 @@ public class PhoneNumberDaoImpl implements PhoneNumberDao{
     }
 
 
-    private void remove(String sqlStatement, Long id) {
-        ContactListLogger.getLog().debug("Started remove() method in PhoneNumberDaoImpl...");
+    private void remove(String sqlStatement, Long id) throws DaoOperationException{
+        ContactListLogger.getLog().debug("Invoked remove() method in PhoneNumberDaoImpl...");
 
         try (Connection connection = dataSource.getConnection()) {
             PreparedStatement preparedStatement = connection.prepareStatement(sqlStatement);
             preparedStatement.setLong(1, id);
 
-            if(executeUpdateAndHandleException(preparedStatement) == 0) {
-                throw new DeleteOperationException("no such phone number");
+            try {
+                if (preparedStatement.executeUpdate() != 1) {
+                    throw new DeleteOperationException("no phone number for id: " + id);
+                }
+            } catch (SQLException e){
+                throw new DaoOperationException("error during deleting phone number with person id: " + id, e);
             }
 
         } catch (SQLException e) {

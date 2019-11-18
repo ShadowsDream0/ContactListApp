@@ -4,6 +4,7 @@ package com.shadowsdream.service;
 import com.shadowsdream.dao.*;
 import com.shadowsdream.dto.*;
 import com.shadowsdream.dto.mappers.*;
+import com.shadowsdream.exception.*;
 import com.shadowsdream.util.logging.ContactListLogger;
 
 import org.mapstruct.factory.Mappers;
@@ -26,62 +27,116 @@ public class PersonServiceImpl implements PersonService {
     }
 
 
-    public Long save(PersonSaveDto personSaveDto) {
-        ContactListLogger.getLog().info("Started save() method...");
+    public Long save(PersonSaveDto personSaveDto) throws PersonServiceException{
+        ContactListLogger.getLog().info("Invoked save() method...");
 
         PersonSaveDtoMapper mapper = Mappers.getMapper(PersonSaveDtoMapper.class);
-
-        return personDao.save(mapper.fromDto(personSaveDto));
+        Long id = 0L;
+        try {
+            id = personDao.save(mapper.fromDto(personSaveDto));
+        } catch (InsertOperationException insertEx) {
+            throw new PersonServiceException("contact saving failed: " + insertEx.getMessage(), insertEx.getCause());
+        } catch (DaoOperationException daoEx) {
+            ContactListLogger.getLog().error("Critical error occurred: " + daoEx.getMessage() + " " + daoEx.getCause());
+            PrettyPrinter.printError("Server critical error. Exiting...");
+            System.exit(1);
+        }
+        return id;
     }
 
 
     public List<PersonViewDto> findAll() {
-        ContactListLogger.getLog().info("Started findAll() method...");
+        ContactListLogger.getLog().info("Invoked findAll() method...");
 
         PersonViewDtoMapper mapper = Mappers.getMapper(PersonViewDtoMapper.class);
 
-        return personDao.findAll().stream()
-                    .map(mapper::toDto)
-                .collect(Collectors.toList());
+        List<PersonViewDto> personViewDtoList = null;
+        try {
+            personViewDtoList = personDao.findAll().stream()
+                        .map(mapper::toDto)
+                    .collect(Collectors.toList());
+        } catch (DaoOperationException e) {
+            ContactListLogger.getLog().error("Critical error occurred: " + e.getMessage() + " " + e.getCause());
+            PrettyPrinter.printError("Server critical error. Exiting...");
+            System.exit(1);
+        }
 
+        return personViewDtoList;
     }
 
 
-    public PersonDto findById(Long id) {
-        ContactListLogger.getLog().info("Started findById() method...");
+    public PersonDto findById(Long id) throws PersonServiceException {
+        ContactListLogger.getLog().info("Invoked findById() method...");
 
         PersonDtoMapper mapper = Mappers.getMapper(PersonDtoMapper.class);
-
-        return mapper.toDto(personDao.findById(id));
+        PersonDto personDto = null;
+        try {
+            personDto =  mapper.toDto(personDao.findById(id));
+        } catch (SelectOperationException selectEx) {
+            throw new PersonServiceException("could not get details: " + selectEx.getMessage());
+        } catch (DaoOperationException daoEx) {
+            ContactListLogger.getLog().error("Critical error occurred: " + daoEx.getMessage() + " " + daoEx.getCause());
+            PrettyPrinter.printError("Server critical error. Exiting...");
+            System.exit(1);
+        }
+        return personDto;
     }
 
 
     public void updatePerson(PersonDto personDto) {
-        ContactListLogger.getLog().info("Started updatePerson() method...");
+        ContactListLogger.getLog().info("Invoked updatePerson() method...");
 
         PersonDtoMapper mapper = Mappers.getMapper(PersonDtoMapper.class);
 
-        personDao.updatePerson(mapper.fromDto(personDto));
+        try {
+            personDao.updatePerson(mapper.fromDto(personDto));
+        } catch (DaoOperationException e) {
+            ContactListLogger.getLog().error("Critical error occurred: " + e.getMessage() + " " + e.getCause());
+            PrettyPrinter.printError("Server critical error. Exiting...");
+            System.exit(1);
+        }
     }
 
 
     public void updatePhoneNumber(PhoneNumberDto phoneNumberDto) {
-        ContactListLogger.getLog().info("Started updatePhoneNumber() method...");
+        ContactListLogger.getLog().info("Invoked updatePhoneNumber() method...");
 
         PhoneNumberDtoMapper mapper = Mappers.getMapper(PhoneNumberDtoMapper.class);
 
-        personDao.updatePhoneNumber(mapper.fromDto(phoneNumberDto));
+        try {
+            personDao.updatePhoneNumber(mapper.fromDto(phoneNumberDto));
+        } catch (DaoOperationException e) {
+            ContactListLogger.getLog().error("Critical error occurred: " + e.getMessage() + " " + e.getCause());
+            PrettyPrinter.printError("Server critical error. Exiting...");
+            System.exit(1);
+        }
     }
 
 
-    public void removePerson(Long id) {
-        ContactListLogger.getLog().info("Started removePerson() method...");
-        personDao.removePerson(id);
+    public void removePerson(Long id) throws PersonServiceException {
+        ContactListLogger.getLog().info("Invoked removePerson() method...");
+        try {
+            personDao.removePerson(id);
+        } catch (DeleteOperationException deleteEx) {
+            throw new PersonServiceException("could not remove contact: " + deleteEx.getMessage());
+        } catch (DaoOperationException daoEx) {
+            ContactListLogger.getLog().error("Critical error occurred: " + daoEx.getMessage() + " " + daoEx.getCause());
+            PrettyPrinter.printError("Server critical error. Exiting...");
+            System.exit(1);
+        }
     }
 
 
-    public void removePhoneNumber(Long id) {
-        ContactListLogger.getLog().info("Started removePhoneNumber() method...");
-        personDao.removePhoneNumber(id);
+    public void removePhoneNumber(Long id) throws PersonServiceException {
+        ContactListLogger.getLog().info("Invoked removePhoneNumber() method...");
+        try {
+            personDao.removePhoneNumber(id);
+        } catch (DeleteOperationException deleteEx) {
+            throw new PersonServiceException("could not remove: " + deleteEx.getMessage());
+        } catch (DaoOperationException daoEx) {
+            ContactListLogger.getLog().error("Critical error occurred: " + daoEx.getMessage() + " " + daoEx.getCause());
+            PrettyPrinter.printError("Server critical error. Exiting...");
+            System.exit(1);
+        }
     }
 }
