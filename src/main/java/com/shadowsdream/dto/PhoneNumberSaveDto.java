@@ -12,23 +12,16 @@ import java.util.Objects;
 @Setter
 @ToString
 @Builder
-public class PhoneNumberDto {
-    private Long id;
+public class PhoneNumberSaveDto {
     private String phone;
     private PhoneType type;
 
-    public PhoneNumberDto(){}
+    public PhoneNumberSaveDto(){}
 
-    public PhoneNumberDto(Long id, String phone, PhoneType type) {
-        Objects.requireNonNull(id, "Argument id must not be null");
+    public PhoneNumberSaveDto(String phone, PhoneType type) {
         Objects.requireNonNull(phone, "Argument phone must not be null");
         Objects.requireNonNull(type, "Argument type must not be null");
 
-        if (id < 1) {
-            throw new IllegalArgumentException("Argument id must not be less then 1");
-        }
-
-        this.id = id;
         this.phone = phone;
         this.type = type;
     }
@@ -39,18 +32,19 @@ public class PhoneNumberDto {
             return true;
         }
 
-        if (!(o instanceof PhoneNumberDto)) {
+        if (!(o instanceof PhoneNumberSaveDto)) {
             return false;
         }
 
-        PhoneNumberDto that = (PhoneNumberDto) o;
+        PhoneNumberSaveDto that = (PhoneNumberSaveDto) o;
 
-        return this.id.equals(that.id);
+        return this.phone.equals(that.phone) && this.type.equals(that.type);
     }
 
     @Override
     public int hashCode() {
-        return this.id.hashCode();
+        int result = this.phone.hashCode();
+        return result * 31 + this.type.hashCode();
     }
 
 }

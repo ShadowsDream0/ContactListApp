@@ -10,10 +10,8 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.*;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.joining;
@@ -30,13 +28,30 @@ public class FileReader {
      * @return string that holds whole file content
      */
     public static String readWholeFileFromResources(String fileName) {
-        try (Stream<String> fileLinesStream = new BufferedReader(new InputStreamReader(getInputStreamFromFile(fileName))).lines()) {
+        Objects.requireNonNull(fileName, "Argument fileName must not be null");
+
+        try ( Stream<String> fileLinesStream = new BufferedReader(
+                                                new InputStreamReader(getInputStreamFromFile(fileName))).lines() ) {
             return fileLinesStream.collect(joining("\n"));
         }
     }
 
+    public static List<String[]> getListOfStringArraysFromPath(Path filePath) {
+        Objects.requireNonNull(filePath, "Argument filepath must not be null");
+
+        List<String[]> listOfStringArrays = null;
+        try (Stream<String> linesStream = Files.newBufferedReader(filePath).lines()) {
+            listOfStringArrays = linesStream.map(line -> line.split(";"))
+                    .collect(Collectors.toList());
+        } catch (IOException e) {
+            System.err.println("Error during reading file\nCaused by: " + e.getMessage());
+            System.exit(1);
+        }
+        return listOfStringArrays;
+    }
+
     private static InputStream getInputStreamFromFile(String fileName) {
-        Objects.requireNonNull(fileName);
+        Objects.requireNonNull(fileName, "Argument fileName must not be null");
 
         return FileReader.class.getClassLoader().getResourceAsStream(fileName);
     }

@@ -6,7 +6,7 @@ BEGIN TRANSACTION;
     DROP TYPE IF EXISTS TYPE_OF_PHONE CASCADE;
 
     CREATE TYPE GENDER AS enum('male', 'female', 'transgender');
-    CREATE TYPE TYPE_OF_PHONE AS enum('mobile', 'desktop');
+    CREATE TYPE TYPE_OF_PHONE AS enum('work', 'home');
 
     CREATE TABLE persons (
         id SERIAL,

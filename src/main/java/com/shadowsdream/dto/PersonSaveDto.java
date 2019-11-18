@@ -20,12 +20,12 @@ public class PersonSaveDto {
     private String city;
     private String email;
 
-    private List<PhoneNumberDto> phoneNumbers;
+    private List<PhoneNumberSaveDto> phoneNumbers;
 
     public PersonSaveDto(){}
 
     public PersonSaveDto(String firstName, String lastName, Gender gender, LocalDate birthday,
-                     String city, String email, List<PhoneNumberDto> phoneNumbers) {
+                     String city, String email, List<PhoneNumberSaveDto> phoneNumbers) {
         Objects.requireNonNull(firstName, "Argument firstName must not be null");
         Objects.requireNonNull(lastName, "Argument lastName must not be null");
         Objects.requireNonNull(gender, "Argument gender must not be null");

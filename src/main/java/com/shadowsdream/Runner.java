@@ -3,32 +3,34 @@ package com.shadowsdream;
 import com.shadowsdream.dto.PersonDto;
 import com.shadowsdream.dto.PersonSaveDto;
 import com.shadowsdream.dto.PhoneNumberDto;
+import com.shadowsdream.dto.PhoneNumberSaveDto;
+import com.shadowsdream.dto.mappers.PhoneNumberDtoMapper;
+import com.shadowsdream.dto.mappers.PhoneNumberSaveDtoMapper;
 import com.shadowsdream.exception.DaoOperationException;
 import com.shadowsdream.exception.DeleteOperationException;
 import com.shadowsdream.exception.InsertOperationException;
 import com.shadowsdream.exception.UpdateOperationException;
 import com.shadowsdream.model.enums.Gender;
-import com.shadowsdream.model.Person;
-import com.shadowsdream.model.PhoneNumber;
 import com.shadowsdream.model.enums.PhoneType;
 import com.shadowsdream.service.PersonService;
 import com.shadowsdream.service.PersonServiceImpl;
+import com.shadowsdream.service.PrettyPrinter;
 import com.shadowsdream.util.FileReader;
 import com.shadowsdream.util.JdbcUtil;
+import com.shadowsdream.util.logging.ContactListLogger;
+import org.mapstruct.Mapper;
+import org.mapstruct.factory.Mappers;
 
 import javax.sql.DataSource;
-import java.net.URI;
-import java.nio.file.FileSystem;
-import java.nio.file.FileSystems;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.util.*;
-import java.util.regex.Pattern;
 
 public class Runner {
 
@@ -42,20 +44,6 @@ public class Runner {
 
     private static String dataBase;
 
-    private static final String menu =
-            "|======================================================================|\n" +
-            "|                   Select an action on contact list                   |\n" +
-            "|----------------------------------------------------------------------|\n" +
-            "|                        <1> - show all contacts                       |\n" +
-            "|                        <2> - view details of contact                 |\n" +
-            "|                        <3> - remove contact                          |\n" +
-            "|                        <4> - remove phone number                     |\n" +
-            "|                        <5> - save contact                            |\n" +
-            "|                        <6> - update contact                          |\n" +
-            "|                        <7> - update phone number                     |\n" +
-            "|                        <8> - exit                                    |\n" +
-            "|======================================================================|\n" +
-            "->";
 
     public static void main(String[] args) {
 
@@ -70,12 +58,12 @@ public class Runner {
 
         String choice = null;
         while (true) {
-            System.out.print(menu);
+            PrettyPrinter.printMenu();
 
             choice = scanner.nextLine();
             switch (choice) {
                 case "1":
-                    findAll();
+                    showAll();
                     break;
                 case "2":
                     showDetails();
@@ -96,6 +84,11 @@ public class Runner {
                     updatePhoneNumbers();
                     break;
                 case "8":
+                    importContacts();
+                    break;
+                case "9":
+                    break;
+                case "10":
                     System.out.println("Exiting...");
                     System.exit(0);
                     break;
@@ -103,17 +96,19 @@ public class Runner {
                     System.out.println("You should choose number from the menu below\n");
                     break;
             }
-            System.out.println("\n--------------------------\nPress any key to continue\n--------------------------");
-            scanner.nextLine();
 
+            PrettyPrinter.printPressAnyKey();
+            scanner.nextLine();
         }
     }
 
 
     private static void savePerson() {
         try {
-            personService.save(getPersonFromInputForSaving());
+            PersonSaveDto personSaveDto = getPersonFromInputForSaving();
+            personService.save(personSaveDto);
             System.out.println("Contact was saved successfully");
+            PrettyPrinter.printPersonInfo(personSaveDto);
         } catch (InsertOperationException e) {
             System.out.println("Could not save contact because of: " + e.getMessage());
         }
@@ -121,7 +116,7 @@ public class Runner {
 
 
     private static PersonSaveDto getPersonFromInputForSaving() {
-        final String menu = "Provide information for a new contact\n";
+        System.out.println("Provide information for a new contact:");
 
         PersonSaveDto personSaveDto = new PersonSaveDto();
 
@@ -190,18 +185,115 @@ public class Runner {
 
         Long id = scanLong();
 
-        System.out.println(personService.findById(id));
+        PrettyPrinter.printPersonInfo(personService.findById(id));
     }
 
 
-    private static void findAll() {
-        personService.findAll().stream()
-                .map(contact -> new StringBuilder(contact.getId().toString())
-                        .append(" ")
-                        .append(contact.getFirstName())
-                        .append(" ")
-                        .append(contact.getLastName()))
-                .forEach(System.out::println);
+    private static void showAll() {
+        personService.findAll().forEach(PrettyPrinter::printPersonInfo);
+    }
+
+
+    private static void importContacts() {
+        // get path from input
+        boolean successfulInput = false;
+        String fileName = null;
+        Path filePath = null;
+
+        do {
+            System.out.println("Enter file path");
+            fileName = scanner.nextLine();
+            filePath = Path.of(fileName);
+            if (!(Files.exists(filePath))) {
+                System.err.println("You must enter valid path to the file");
+            } else {
+                successfulInput = true;
+            }
+
+        } while (!successfulInput);
+
+        ContactListLogger.getLog().debug("Path to file got from input: " + filePath);
+
+        // read person data from file
+        List<String[]> linesWithPersonData = FileReader.getListOfStringArraysFromPath(filePath);
+
+        ContactListLogger.getLog().debug("Lines with person data got: " + linesWithPersonData.toString());
+
+        // save contacts to db
+        PersonSaveDto personSaveDto = null;
+        int sizeOfList = linesWithPersonData.size();
+        for(int line = 0 ; line < sizeOfList; line++) {
+            try {
+                personSaveDto = getPersonSaveDtoFromData(parsePersonData(linesWithPersonData.get(line)));
+            } catch (IOException e) {
+                System.err.println("Import failed on line " + (line + 1) + ". Cause: " + e.getMessage());
+                System.out.println("Exiting...");
+                System.exit(1);
+            }
+            personService.save(personSaveDto);
+        }
+
+        System.out.println("Contacts have been imported successfully");
+    }
+
+
+    private static PersonSaveDto getPersonSaveDtoFromData(Map<String, String> personData) {
+        Objects.requireNonNull(personData, "Argument personData must not be null");
+
+        return PersonSaveDto.builder()
+                .firstName(personData.get("firstName"))
+                .lastName(personData.get("lastName"))
+                .gender(Gender.valueOf(personData.get("gender").toUpperCase()))
+                .birthday(LocalDate.parse(personData.get("birthday")))
+                .city(personData.get("city"))
+                .email(personData.get("email"))
+                .phoneNumbers(getListOfPhoneNumbersFromData(personData))
+                .build();
+    }
+
+
+    private static List<PhoneNumberSaveDto> getListOfPhoneNumbersFromData(Map<String, String> personData) {
+        List<PhoneNumberSaveDto> phoneNumberDtos = new ArrayList<>();
+        String workPhoneNumber = personData.get("workPhoneNumber");
+        String homePhoneNumber = personData.get("homePhoneNumber");
+
+        if (!workPhoneNumber.isEmpty()) {
+            phoneNumberDtos.add(PhoneNumberSaveDto.builder()
+                    .phone(workPhoneNumber)
+                    .type(PhoneType.WORK)
+                    .build());
+        }
+
+        if (!homePhoneNumber.isEmpty()) {
+            phoneNumberDtos.add(PhoneNumberSaveDto.builder()
+                    .phone(homePhoneNumber)
+                    .type(PhoneType.HOME)
+                    .build());
+        }
+
+        return phoneNumberDtos;
+    }
+
+
+    private static Map<String, String> parsePersonData(String[] personData) throws IOException {
+        Objects.requireNonNull(personData, "Argument personData must not be null");
+        if (personData.length != 8) {
+            throw new IOException("corrupted person data");
+        }
+
+        String[] keys = {"firstName", "lastName", "gender", "birthday",
+                "city", "email", "workPhoneNumber", "homePhoneNumber"};
+
+        Map<String, String> mapPersonData = new HashMap<>(8);
+        for(int i = 0; i < keys.length; i++) {
+            if(personData[i] == null) {
+                throw new IOException("person data contains null reference at " + (i + 1) + " index");
+            } else {
+                mapPersonData.put(keys[i], personData[i]);
+            }
+        }
+
+        return mapPersonData;
     }
 
 
@@ -214,7 +306,8 @@ public class Runner {
 
         try {
             personService.updatePerson(personDto);
-            System.out.println("Contact updated successfully");
+            System.out.println("Contact updated successfully:");
+            PrettyPrinter.printPersonInfo(personDto);
         } catch (UpdateOperationException e) {                  //does exception name violates encapsulation?
             System.out.println("Could not update person because of: " + e.getMessage());
         }
@@ -237,8 +330,10 @@ public class Runner {
             switch (choice) {
                 case "1":
                     try {
-                        personService.updatePhoneNumber(getUpdatedPhoneNumber(dtoPhoneNumbers));
+                        PhoneNumberDto updatedPhoneNumberDto = getUpdatedPhoneNumber(dtoPhoneNumbers);
+                        personService.updatePhoneNumber(updatedPhoneNumberDto);
                         System.out.println("Phone number has been set successfully");
+                        PrettyPrinter.printPhoneNumber(updatedPhoneNumberDto);
                     } catch (UpdateOperationException e) {
                         System.out.println("Could not update phone number because of: " + e.getMessage());
                     }
@@ -308,7 +403,7 @@ public class Runner {
                     System.out.println("City has been set successfully");
                     break;
                 case "6":
-                    System.out.println("Enter email\n->");
+                    System.out.print("Enter email\n->");
                     String email = scanner.nextLine();
                     personDto.setEmail(email);
                     System.out.println("Email has been set successfully");
@@ -345,10 +440,10 @@ public class Runner {
     }
 
 
-    private static List<PhoneNumberDto> scanPhoneNumbers() {
+    private static List<PhoneNumberSaveDto> scanPhoneNumbers() {
         boolean done = false;
 
-        List<PhoneNumberDto> dtoPhoneNumbers = new ArrayList<>();
+        List<PhoneNumberSaveDto> dtoPhoneNumbers = new ArrayList<>();
 
         do {
             // get new phone number from input
@@ -356,22 +451,22 @@ public class Runner {
             String choice = scanner.nextLine();
             switch (choice) {
                 case "1":
-                    PhoneNumberDto phoneNumberDto = new PhoneNumberDto();
+                    PhoneNumberSaveDto phoneNumberSaveDto = new PhoneNumberSaveDto();
                     System.out.print("Enter phone number (+x-xxx-xxx-xxxx)\n->");
                     String phoneNumber = scanner.nextLine();
-                    phoneNumberDto.setPhone(phoneNumber);
+                    phoneNumberSaveDto.setPhone(phoneNumber);
 
                     boolean successfulInput = false;
                     do {
-                        System.out.print("Enter phone type (1 - desktop, 2 - mobile)\n->");
+                        System.out.print("Enter phone type (1 - home, 2 - work)\n->");
                         String typeNumber = scanner.nextLine();
                         switch (typeNumber) {
                             case "1":
-                                phoneNumberDto.setType(PhoneType.DESKTOP);
+                                phoneNumberSaveDto.setType(PhoneType.HOME);
                                 successfulInput = true;
                                 break;
                             case "2":
-                                phoneNumberDto.setType(PhoneType.MOBILE);
+                                phoneNumberSaveDto.setType(PhoneType.WORK);
                                 successfulInput = true;
                                 break;
                             default:
@@ -380,8 +475,14 @@ public class Runner {
                         }
                     } while (!successfulInput);
 
-                    dtoPhoneNumbers.add(phoneNumberDto);
-                    System.out.println("Phone number has been set successfully");
+                    dtoPhoneNumbers.add(phoneNumberSaveDto);
+                    System.out.println("Phone number has been set successfully:");
+
+                    // bad code
+                    PhoneNumberSaveDtoMapper saveDtoMapper = Mappers.getMapper(PhoneNumberSaveDtoMapper.class);
+                    PhoneNumberDtoMapper dtoMapper = Mappers.getMapper(PhoneNumberDtoMapper.class);
+                    PrettyPrinter.printPhoneNumber(dtoMapper.toDto(saveDtoMapper.fromDto(phoneNumberSaveDto)));
+
                     break;
                 case "2":
                     done = true;
