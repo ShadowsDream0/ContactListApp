@@ -1,4 +1,23 @@
 package com.shadowsdream.service;
 
+import com.shadowsdream.model.Person;
+import com.shadowsdream.model.PhoneNumber;
+
+import java.util.List;
+
 public interface PersonService {
+
+    Long save(Person person);
+
+    List<Person> findAll();
+
+    Person findById(Long id);
+
+    void updatePerson(Person person);
+
+    void updatePhoneNumber(PhoneNumber phoneNumber);
+
+    void removePerson(Long id);
+
+    void removePhoneNumber(Long id);
 }
