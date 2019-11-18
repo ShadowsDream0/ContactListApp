@@ -4,9 +4,10 @@ import com.shadowsdream.exception.DaoOperationException;
 import com.shadowsdream.exception.DeleteOperationException;
 import com.shadowsdream.exception.InsertOperationException;
 import com.shadowsdream.exception.UpdateOperationException;
-import com.shadowsdream.model.Gender;
+import com.shadowsdream.model.enums.Gender;
 import com.shadowsdream.model.Person;
 import com.shadowsdream.model.PhoneNumber;
+import com.shadowsdream.util.logging.ContactListLogger;
 
 import javax.sql.DataSource;
 import java.sql.*;
@@ -30,7 +31,7 @@ public class PersonDaoImpl implements PersonDao {
                                                                 "email = ? " +
                                                             "WHERE id = ?;";
 
-    private static final String SELECT_ALL_SQL_STATEMENT = "SELECT * FROM persons;";
+    private static final String SELECT_ALL_SQL_STATEMENT = "SELECT * FROM persons ORDER BY id;";
 
     private static final String SELECT_BY_ID_SQL_STATEMENT = "SELECT * FROM persons WHERE id = ?;";
 
@@ -45,6 +46,8 @@ public class PersonDaoImpl implements PersonDao {
 
     @Override
     public Long save(Person person) {
+        ContactListLogger.getLog().debug("Started save() method in PersonDaoImpl...");
+
         Objects.requireNonNull(person, "Argument person must not be null");
 
         try (Connection connection = dataSource.getConnection()) {
@@ -61,9 +64,13 @@ public class PersonDaoImpl implements PersonDao {
                 long id = generatedKey.getLong("id");
                 person.setId(id);
 
+                ContactListLogger.getLog().debug("Person state before setting phone numbers " + person);
+
                 phoneNumberDao.savePhoneNumbers(person.getId(), person.getPhoneNumbers());
 
+                ContactListLogger.getLog().debug("Person state after setting phone numbers " + person);
                 return id;
+
             } else {
                 throw new DaoOperationException("No Id returned after save book");
             }
@@ -76,8 +83,9 @@ public class PersonDaoImpl implements PersonDao {
 
     @Override
     public List<Person> findAll() {
-        ResultSet resultSet = null;
+        ContactListLogger.getLog().debug("Started findAll() method in PersonDaoImpl...");
 
+        ResultSet resultSet = null;
         try (Connection connection = dataSource.getConnection()) {
             PreparedStatement preparedStatement = connection.prepareStatement(SELECT_ALL_SQL_STATEMENT);
             resultSet = preparedStatement.executeQuery();
@@ -92,6 +100,8 @@ public class PersonDaoImpl implements PersonDao {
 
     @Override
     public Person findById(Long id) {
+        ContactListLogger.getLog().debug("Started findById() method in PersonDaoImpl...");
+
         Objects.requireNonNull(id, "Argument id must not be null");
 
         ResultSet resultSet = null;
@@ -107,17 +117,22 @@ public class PersonDaoImpl implements PersonDao {
         Person person = new Person();
         setPersonFromResultSet(resultSet, person);
 
+        ContactListLogger.getLog().debug("Returned person " + person);
         return person;
     }
 
 
     @Override
     public void updatePerson(Person person) {
+        ContactListLogger.getLog().debug("Started updatePerson() method in PersonDaoImpl...");
+
         Objects.requireNonNull(person, "Argument person must not be null");
 
         try (Connection connection = dataSource.getConnection()) {
             PreparedStatement preparedStatement = connection.prepareStatement(UPDATE_SQL_STATEMENT);
             setPreparedStatementFull(preparedStatement, person);
+
+            ContactListLogger.getLog().debug("Person before executing statement " + person);
 
             if (executeUpdateAndHandleException(preparedStatement) == 0) {
                 throw new UpdateOperationException("Updating table has failed");
@@ -126,16 +141,22 @@ public class PersonDaoImpl implements PersonDao {
         } catch (SQLException e) {
             throw new DaoOperationException("Error during preparing update statement", e);
         }
+
+        ContactListLogger.getLog().debug("Returned from updatePerson() method in PersonDaoImpl...");
     }
 
 
     public void updatePhoneNumber(PhoneNumber phoneNumber) {
+        ContactListLogger.getLog().debug("Started updatePhoneNumber() method in PhoneNumberDaoImpl...");
         phoneNumberDao.updatePhoneNumber(phoneNumber);
+        ContactListLogger.getLog().debug("Returned from updatePhoneNumber() method in PhoneNumberDaoImpl...");
     }
 
 
     @Override
     public void removePerson(Long id) {
+        ContactListLogger.getLog().debug("Started removePerson() method in PersonDaoImpl...");
+
         Objects.requireNonNull(id, "Argument id must not be null");
 
         phoneNumberDao.removeAllPersonPhoneNumbers(id);
@@ -151,12 +172,18 @@ public class PersonDaoImpl implements PersonDao {
         } catch (SQLException e) {
             throw new DaoOperationException("Error during deleting record from table", e);
         }
+
+        ContactListLogger.getLog().debug("Returned from removePerson() method in PersonDaoImpl...");
     }
 
 
     @Override
     public void removePhoneNumber(Long phoneNumberId) {
+        ContactListLogger.getLog().debug("Started removePhoneNumber() method in PersonDaoImpl...");
+
         phoneNumberDao.removePhoneNumber(phoneNumberId);
+
+        ContactListLogger.getLog().debug("Returned from removePhoneNumber() method in PersonDaoImpl...");
     }
 
 
@@ -205,6 +232,8 @@ public class PersonDaoImpl implements PersonDao {
 
 
     private boolean setPersonFromResultSet(ResultSet resultSet, Person person) {
+        ContactListLogger.getLog().debug("Started setPersonFromResultSet() method in PersonDaoImpl...");
+
         Objects.requireNonNull(resultSet, "Argument resultSet must not be null");
         Objects.requireNonNull(person, "Argument person must not be null");
 
@@ -229,6 +258,7 @@ public class PersonDaoImpl implements PersonDao {
             throw new DaoOperationException("Error during reading result set", e);
         }
 
+        ContactListLogger.getLog().debug("Person has been set with values:" + person);
         return hasNext;
     }
 
@@ -241,7 +271,7 @@ public class PersonDaoImpl implements PersonDao {
 
         //ignore person with no phone numbers
         Long person_id = person.getId();
-        if (!mapOfPhonesNumbers.containsKey(person.getId())) {
+        if (mapOfPhonesNumbers.get(person_id) == null) {
             return;
         }
 
@@ -256,7 +286,7 @@ public class PersonDaoImpl implements PersonDao {
 
 
     private Collection<Person> getPersonCollection(ResultSet resultSet) {
-
+        ContactListLogger.getLog().debug("Started getPersonCollection() method in PersonDaoImpl...");
         Collection<Person> collectionOfPersons = new ArrayList<>();
 
         while (true) {
@@ -267,6 +297,7 @@ public class PersonDaoImpl implements PersonDao {
             collectionOfPersons.add(person);
         }
 
+        ContactListLogger.getLog().debug("Collection of persons returned " + collectionOfPersons);
         return collectionOfPersons;
     }
 }

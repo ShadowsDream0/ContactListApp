@@ -1,19 +1,23 @@
 package com.shadowsdream.service;
 
-import com.shadowsdream.dao.PersonDao;
-import com.shadowsdream.dao.PersonDaoImpl;
-import com.shadowsdream.exception.DaoOperationException;
-import com.shadowsdream.exception.DeleteOperationException;
-import com.shadowsdream.model.Person;
-import com.shadowsdream.model.PhoneNumber;
+
+import com.shadowsdream.dao.*;
+import com.shadowsdream.dto.*;
+import com.shadowsdream.dto.mappers.*;
+import com.shadowsdream.util.logging.ContactListLogger;
+
+import org.mapstruct.factory.Mappers;
 
 import javax.sql.DataSource;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
+
 
 public class PersonServiceImpl implements PersonService {
 
     private PersonDao personDao = null;
+
 
     public PersonServiceImpl(DataSource dataSource) {
         Objects.requireNonNull(dataSource, "Arguments dataSource must not be null");
@@ -21,31 +25,63 @@ public class PersonServiceImpl implements PersonService {
         this.personDao = new PersonDaoImpl(dataSource);
     }
 
-    public Long save(Person person) {
-        return personDao.save(person);
+
+    public Long save(PersonSaveDto personSaveDto) {
+        ContactListLogger.getLog().info("Started save() method...");
+
+        PersonSaveDtoMapper mapper = Mappers.getMapper(PersonSaveDtoMapper.class);
+
+        return personDao.save(mapper.fromDto(personSaveDto));
     }
 
-    public List<Person> findAll() {
-        return personDao.findAll();
+
+    public List<PersonViewDto> findAll() {
+        ContactListLogger.getLog().info("Started findAll() method...");
+
+        PersonViewDtoMapper mapper = Mappers.getMapper(PersonViewDtoMapper.class);
+
+        return personDao.findAll().stream()
+                    .map(mapper::toDto)
+                .collect(Collectors.toList());
+
     }
 
-    public Person findById(Long id) {
-        return personDao.findById(id);
+
+    public PersonDto findById(Long id) {
+        ContactListLogger.getLog().info("Started findById() method...");
+
+        PersonDtoMapper mapper = Mappers.getMapper(PersonDtoMapper.class);
+
+        return mapper.toDto(personDao.findById(id));
     }
 
-    public void updatePerson(Person person) {
-        personDao.updatePerson(person);
+
+    public void updatePerson(PersonDto personDto) {
+        ContactListLogger.getLog().info("Started updatePerson() method...");
+
+        PersonDtoMapper mapper = Mappers.getMapper(PersonDtoMapper.class);
+
+        personDao.updatePerson(mapper.fromDto(personDto));
     }
 
-    public void updatePhoneNumber(PhoneNumber phoneNumber) {
-        personDao.updatePhoneNumber(phoneNumber);
+
+    public void updatePhoneNumber(PhoneNumberDto phoneNumberDto) {
+        ContactListLogger.getLog().info("Started updatePhoneNumber() method...");
+
+        PhoneNumberDtoMapper mapper = Mappers.getMapper(PhoneNumberDtoMapper.class);
+
+        personDao.updatePhoneNumber(mapper.fromDto(phoneNumberDto));
     }
+
 
     public void removePerson(Long id) {
+        ContactListLogger.getLog().info("Started removePerson() method...");
         personDao.removePerson(id);
     }
 
+
     public void removePhoneNumber(Long id) {
+        ContactListLogger.getLog().info("Started removePhoneNumber() method...");
         personDao.removePhoneNumber(id);
     }
 }

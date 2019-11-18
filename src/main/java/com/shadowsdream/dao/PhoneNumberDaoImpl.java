@@ -5,7 +5,8 @@ import com.shadowsdream.exception.DeleteOperationException;
 import com.shadowsdream.exception.InsertOperationException;
 import com.shadowsdream.exception.UpdateOperationException;
 import com.shadowsdream.model.PhoneNumber;
-import com.shadowsdream.model.PhoneType;
+import com.shadowsdream.model.enums.PhoneType;
+import com.shadowsdream.util.logging.ContactListLogger;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
@@ -17,7 +18,7 @@ import java.util.*;
 public class PhoneNumberDaoImpl implements PhoneNumberDao{
     private DataSource dataSource;
 
-    private final String SELECT_ALL_SQL_STATEMENT = "SELECT * FROM phones;";
+    private final String SELECT_ALL_SQL_STATEMENT = "SELECT * FROM phones ORDER BY person_id;";
 
     private final String INSERT_SQL_STATEMENT = "INSERT INTO phones (phone_number, phone_type, person_id)" +
                                                 " VALUES (?, CAST(? AS TYPE_OF_PHONE), ?);";
@@ -55,6 +56,7 @@ public class PhoneNumberDaoImpl implements PhoneNumberDao{
 
     @Override
     public Set<Long> savePhoneNumbers(Long personId, List<PhoneNumber> phoneNumberList) {
+
         Objects.requireNonNull(personId, "Argument personId must not be null");
         Objects.requireNonNull(phoneNumberList, "Argument phoneNumberList must not be null");
 
@@ -69,28 +71,38 @@ public class PhoneNumberDaoImpl implements PhoneNumberDao{
 
     @Override
     public void removeAllPersonPhoneNumbers(Long personId) {
-       Objects.requireNonNull(personId, "Argumernt personId must not be null");
+        ContactListLogger.getLog().debug("Started removeAllPersonPhoneNumbers() method in PhoneNumberDaoImpl...");
+        Objects.requireNonNull(personId, "Argumernt personId must not be null");
 
         remove(DELETE_ALL_SQL_STATEMENT, personId);
+        ContactListLogger.getLog().debug("Returned from removeAllPersonPhoneNumbers() method in PhoneNumberDaoImpl...");
     }
 
 
     @Override
     public void removePhoneNumber(Long id) {
+        ContactListLogger.getLog().debug("Started removePhoneNumber() method in PhoneNumberDaoImpl...");
+
         Objects.requireNonNull(id, "Argument id must not be null");
 
         remove(DELETE_ONE_SQL_STATEMENT, id);
+
+        ContactListLogger.getLog().debug("Returned removePhoneNumber() method in PhoneNumberDaoImpl...");
     }
 
 
 
     @Override
     public void updatePhoneNumber(PhoneNumber phoneNumber) {
+        ContactListLogger.getLog().debug("Started updatePhoneNumber() method in PhoneNumberDaoImpl...");
+
         Objects.requireNonNull(phoneNumber, "Argument phoneNumber must not be null");
 
         try (Connection connection = dataSource.getConnection()) {
             PreparedStatement preparedStatement = connection.prepareStatement(UPDATE_SQL_STATEMENT);
             setPreparedStatement(preparedStatement, phoneNumber, phoneNumber.getId());
+
+            ContactListLogger.getLog().debug("Phone number before executing statement " + phoneNumber);
 
             if (executeUpdateAndHandleException(preparedStatement) != 1) {
                 throw new UpdateOperationException("Failed to update phone number");
@@ -99,6 +111,8 @@ public class PhoneNumberDaoImpl implements PhoneNumberDao{
         } catch (SQLException e) {
             throw new DaoOperationException("Error during updating table", e);
         }
+
+        ContactListLogger.getLog().debug("Returned from updatePhoneNumber() method in PhoneNumberDaoImpl...");
     }
 
 
@@ -209,6 +223,8 @@ public class PhoneNumberDaoImpl implements PhoneNumberDao{
 
 
     private void remove(String sqlStatement, Long id) {
+        ContactListLogger.getLog().debug("Started remove() method in PhoneNumberDaoImpl...");
+
         try (Connection connection = dataSource.getConnection()) {
             PreparedStatement preparedStatement = connection.prepareStatement(sqlStatement);
             preparedStatement.setLong(1, id);
@@ -220,5 +236,6 @@ public class PhoneNumberDaoImpl implements PhoneNumberDao{
         } catch (SQLException e) {
             throw new DaoOperationException("Error during removing phone numbers from table");
         }
+        ContactListLogger.getLog().debug("Returned from remove() method in PhoneNumberDaoImpl...");
     }
 }

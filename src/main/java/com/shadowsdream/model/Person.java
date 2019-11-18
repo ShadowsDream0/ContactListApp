@@ -1,5 +1,7 @@
 package com.shadowsdream.model;
 
+import com.shadowsdream.model.PhoneNumber;
+import com.shadowsdream.model.enums.Gender;
 import lombok.*;
 
 import java.time.LocalDate;
