@@ -11,7 +11,7 @@ import java.util.regex.Pattern;
 
 public class ValidatorServiceImpl implements ValidatorService {
 
-    private static final int MIN_EMAIL_LENGTH = 5;
+    private static final int MIN_EMAIL_LENGTH = 6;
     private static final int MAX_EMAIL_LENGTH = 254;
     private static final Pattern VALID_EMAIL_PATTERN = Pattern.compile("^[\\w+-.%]+@[a-z0-9.-]+[.][a-z]{2,6}$",
                                                                         Pattern.CASE_INSENSITIVE);
@@ -21,6 +21,9 @@ public class ValidatorServiceImpl implements ValidatorService {
                                                                             Pattern.CASE_INSENSITIVE);
     private static final int PHONE_NUMBER_LENGTH = 15;
     private static final Pattern VALID_PHONE_NUMBER_PATTERN = Pattern.compile("^[+]\\d(-\\d{3}){2}-\\d{4}$");
+
+    private static final int TOO_OLD = 120;
+    private static final int UNDERAGE = 18;
 
     private static ValidatorService validatorService = null;
 
@@ -65,8 +68,12 @@ public class ValidatorServiceImpl implements ValidatorService {
             throw new InvalidInputException("date is not valid");
         }
 
-        if (Period.between(birthday, LocalDate.now()).getYears() > 120) {
+        if (Period.between(birthday, LocalDate.now()).getYears() > TOO_OLD) {
             throw new InvalidInputException("you can't be that old");
+        }
+
+        if (Period.between(birthday, LocalDate.now()).getYears() < UNDERAGE) {
+            throw new InvalidInputException("you are underage to use this application");
         }
 
         return birthday;
