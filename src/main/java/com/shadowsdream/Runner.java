@@ -6,14 +6,13 @@ import com.shadowsdream.dto.PhoneNumberDto;
 import com.shadowsdream.dto.PhoneNumberSaveDto;
 import com.shadowsdream.dto.mappers.PhoneNumberDtoMapper;
 import com.shadowsdream.dto.mappers.PhoneNumberSaveDtoMapper;
-import com.shadowsdream.exception.*;
-import com.shadowsdream.model.Person;
+import com.shadowsdream.exception.InvalidInputException;
+import com.shadowsdream.exception.PersonServiceException;
 import com.shadowsdream.model.enums.Gender;
 import com.shadowsdream.model.enums.PhoneType;
 import com.shadowsdream.service.*;
 import com.shadowsdream.util.FileReader;
 import com.shadowsdream.util.JdbcUtil;
-import com.shadowsdream.util.PropertyLoader;
 import com.shadowsdream.util.logging.ContactListLogger;
 import org.mapstruct.factory.Mappers;
 
@@ -240,7 +239,6 @@ public class Runner {
 
 
     private static void importContacts() { // todo: make separate class
-        // get path from input
         boolean successfulInput = false;
         String fileName = null;
         Path filePath = null;
@@ -259,41 +257,7 @@ public class Runner {
 
         ContactListLogger.getLog().debug("Path to file got from input: " + filePath);
 
-        // read person data from file
-        List<String[]> linesWithPersonData = null;
-        try {
-            linesWithPersonData = FileReader.getListOfStringArraysFromPath(filePath);
-        } catch (FileNotFoundException e) {
-            PrettyPrinter.printError("Could not find property file\n");
-            return;
-        } catch (IOException notFoundEx) {
-            PrettyPrinter.printError("Could not read file\n");
-            return;
-        }
 
-        ContactListLogger.getLog().debug("Lines with person data got: " + linesWithPersonData.get(0));
-
-        // save contacts to db
-        PersonSaveDto personSaveDto = null;
-        int sizeOfList = linesWithPersonData.size();
-        for(int line = 0 ; line < sizeOfList; line++) {
-            try {
-                personSaveDto = getPersonSaveDtoFromData(parsePersonData(linesWithPersonData.get(line)));
-            } catch (IOException e) {
-                PrettyPrinter.print("Import failed on line " + (line + 1) + ". Cause: " + e.getMessage() + "\n");
-                PrettyPrinter.print("Exiting...\n");
-                System.exit(1);
-            }
-
-            try {
-                personService.save(personSaveDto);
-            } catch (PersonServiceException e) {
-                PrettyPrinter.print("Could not save contact because " + e.getMessage());
-                return;
-            }
-        }
-
-        PrettyPrinter.print("Contacts have been imported successfully\n");
     }
 
 
@@ -712,7 +676,7 @@ public class Runner {
         }
     }
 
-    public static void initvalidatorServiceService() {
+    private static void initvalidatorServiceService() {
         validatorService = ValidatorServiceImpl.getInstance();
     }
 }
