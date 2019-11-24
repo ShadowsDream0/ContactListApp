@@ -12,7 +12,7 @@ import com.shadowsdream.exception.ServiceException;
 import com.shadowsdream.model.enums.Gender;
 import com.shadowsdream.model.enums.PhoneType;
 import com.shadowsdream.service.*;
-import com.shadowsdream.util.FileReader;
+import com.shadowsdream.util.io.FileReader;
 import com.shadowsdream.util.JdbcUtil;
 import com.shadowsdream.util.logging.ContactListLogger;
 import org.mapstruct.factory.Mappers;
@@ -21,7 +21,6 @@ import javax.sql.DataSource;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -39,6 +38,7 @@ public class Runner {
     private static PersonService personService;
     private static ValidatorService validatorService;
     private static ImportExportService importExportService;
+    private static EmailSenderService emailSenderService;
 
 
     private static final Scanner scanner = new Scanner(System.in);
@@ -91,6 +91,9 @@ public class Runner {
                     exportContacts();
                     break;
                 case "10":
+                    sendContactsByEmail();
+                    break;
+                case "11":
                     PrettyPrinter.print("Exiting...\n");
                     System.exit(0);
                     break;
@@ -243,7 +246,51 @@ public class Runner {
     }
 
 
-    private static void importContacts() { // todo: make separate class
+    private static void sendContactsByEmail() {
+        boolean successfulInput = false;
+
+        MAIN_LOOP: do {
+            PrettyPrinter.print("Select action: 1 - send contacts in a message, 2 - send contacts in an attached file\n");
+            String choice = scanner.nextLine();
+            PrettyPrinter.print("Enter email address\n");
+            String recipient = scanner.nextLine();
+
+            switch (choice) {
+                case "1":
+                    try {
+                        emailSenderService.sendEmail(importExportService.getContactsLines(), recipient);
+                        PrettyPrinter.print("Email was sent successfully\n");
+                        successfulInput = true;
+                    } catch (ServiceException e) {
+                        PrettyPrinter.printError("Can not send email: " + e.getMessage() + "\n");
+                        break MAIN_LOOP;
+                    }
+
+                    break;
+
+                case "2":
+                    String attachmentPath = scanner.nextLine();
+                    try {
+                        emailSenderService.sendEmailWithAttachment(recipient, attachmentPath);
+                        PrettyPrinter.print("Email was sent successfully\n");
+                        successfulInput = true;
+                    } catch (ServiceException e) {
+                        PrettyPrinter.printError("Can not send email: " + e.getMessage() + "\n");
+                        break MAIN_LOOP;
+                    }
+
+                    break;
+
+                default:
+                    PrettyPrinter.print("You must choose only from two options below\n");
+                    break;
+            }
+
+        } while (!successfulInput);
+
+    }
+
+    private static void importContacts() {
         boolean successfulInput = false;
         String fileName = null;
         Path filePath = null;
@@ -660,5 +707,14 @@ public class Runner {
 
     private static void initImportExportService() {
         importExportService = ImportExportServiceImpl.getInstance(dataSource);
+    }
+
+    private static void initEmailSenderService() {
+        try {
+            emailSenderService = EmailSenderService.getInstance();
+        } catch (ServiceException e) {
+            PrettyPrinter.printError("Warning! File with email properties not found. " +
+                    "Application is running in restricted mode");
+        }
     }
 }

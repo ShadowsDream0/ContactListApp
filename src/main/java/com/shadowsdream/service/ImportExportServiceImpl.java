@@ -9,8 +9,8 @@ import com.shadowsdream.model.Person;
 import com.shadowsdream.model.PhoneNumber;
 import com.shadowsdream.model.enums.Gender;
 import com.shadowsdream.model.enums.PhoneType;
-import com.shadowsdream.util.FileReader;
-import com.shadowsdream.util.FileReaderException;
+import com.shadowsdream.util.io.FileReader;
+import com.shadowsdream.util.io.FileReaderException;
 import com.shadowsdream.util.PropertyLoader;
 import com.shadowsdream.util.logging.ContactListLogger;
 
@@ -21,9 +21,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDate;
 import java.util.*;
-import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public final class ImportExportServiceImpl implements ImportExportService {
 
@@ -77,6 +75,15 @@ public final class ImportExportServiceImpl implements ImportExportService {
 
     @Override
     public void exportToFile(Path filePath) throws ServiceException {
+        // write contacts to a file
+        try (BufferedWriter writer = Files.newBufferedWriter(filePath)) {
+            writer.write(getContactsLines() + "\n");
+        } catch (IOException e) {
+            throw new ServiceException("could not write to a file", e);
+        }
+    }
+
+    public String getContactsLines() throws ServiceException {
         // get all contacts from db
         List<Person> persons = null;
         try {
@@ -89,7 +96,7 @@ public final class ImportExportServiceImpl implements ImportExportService {
 
         // prepare contacts to writing to a file
         String delimiter = getDelimiter();
-        String contactLines = persons.stream()
+        return persons.stream()
                 .map(p -> {
 
                     // get person's phone numbers
@@ -135,14 +142,6 @@ public final class ImportExportServiceImpl implements ImportExportService {
                             .toString();
                 })
                 .collect(Collectors.joining("\n"));
-
-
-        // write contacts to a file
-        try (BufferedWriter writer = Files.newBufferedWriter(filePath)) {
-            writer.write(contactLines + "\n");
-        } catch (IOException e) {
-            throw new ServiceException("could not write to a file", e);
-        }
     }
 
     private static Map<String, String> parsePersonData(String[] personData) throws IOException {

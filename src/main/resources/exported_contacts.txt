@@ -1,0 +1,10 @@
+Foo;Barson;1990-06-12;male;Los Angeles;foo.barson@gmail.com;;+1-202-555-0142
+Bar;MCBaz;1989-03-30;female;New York;bar.mcbaz@gmail.com;;+1-202-555-0142
+Baz;Fooey;1988-02-29;transgender;New York;baz.fooey@gmail.com;+1-202-555-0108;+1-202-555-0110
+Foo;Bazey;1989-03-30;male;New York;foo.bazey@gmail.com;+1-202-555-0187;
+Bar;MCBaz;1989-03-30;female;New York;bar.mcbaz1@gmail.com;;+1-202-555-0178
+Bar;Fooer;1991-12-01;male;San Francisco;bar.fooer@gmail.com;;+1-202-555-0178
+Baz;Barer;1987-02-28;female;Washington;baz.barer@gmail.com;+1-202-555-0183;+1-202-555-0152
+Foobar;Bazfooey;1986-11-21;transgender;San Francisco;foobar.bazfooey@gmail.com;+1-202-555-0127;
+Bazfoo;MCBarfoo;1989-03-30;female;New York;bazfoo.mcbarfoo@gmail.com;;
+Barbaz;Foobazey;1985-10-01;male;New York;barbaz.foobazey@gmail.com;;+1-617-555-0177

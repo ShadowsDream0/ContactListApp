@@ -28,7 +28,7 @@
         <appender-ref ref="FILE"/>
     </logger>
 
-    <logger name="com.shadowsdream.util.FileReader" level="debug" additivity="false">
+    <logger name="com.shadowsdream.util.io.FileReader" level="debug" additivity="false">
         <appender-ref ref="FILE"/>
     </logger>
 

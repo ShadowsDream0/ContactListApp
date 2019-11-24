@@ -1,4 +1,4 @@
-package com.shadowsdream.util;
+package com.shadowsdream.util.io;
 
 import java.io.IOException;
 import java.net.URI;
