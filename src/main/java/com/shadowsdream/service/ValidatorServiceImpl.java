@@ -9,7 +9,7 @@ import java.time.format.DateTimeParseException;
 import java.util.Objects;
 import java.util.regex.Pattern;
 
-public class ValidatorServiceImpl implements ValidatorService {
+public final class ValidatorServiceImpl implements ValidatorService {
 
     private static final int MIN_EMAIL_LENGTH = 6;
     private static final int MAX_EMAIL_LENGTH = 254;

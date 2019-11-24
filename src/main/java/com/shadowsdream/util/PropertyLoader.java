@@ -8,10 +8,9 @@ public class PropertyLoader {
 
     private PropertyLoader(){}
 
-    public static String getProperties() throws IOException {
+    public static String getDelimiter() throws IOException {
         Properties p = new Properties();
-        p.load(new FileReader("C:\\Users\\Shadow'sDream\\IdeaProjects\\contact_list_app\\src\\main\\resources" +
-                "\\configuration.properties"));
+        p.load(new FileReader("/home/shadows-dream/IdeaProjects/contact-list-app/src/main/resources/configuration.properties"));
         return p.getProperty("delimiter");
     }
 }

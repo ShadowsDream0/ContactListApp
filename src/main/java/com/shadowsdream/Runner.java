@@ -8,6 +8,7 @@ import com.shadowsdream.dto.mappers.PhoneNumberDtoMapper;
 import com.shadowsdream.dto.mappers.PhoneNumberSaveDtoMapper;
 import com.shadowsdream.exception.InvalidInputException;
 import com.shadowsdream.exception.PersonServiceException;
+import com.shadowsdream.exception.ServiceException;
 import com.shadowsdream.model.enums.Gender;
 import com.shadowsdream.model.enums.PhoneType;
 import com.shadowsdream.service.*;
@@ -17,15 +18,17 @@ import com.shadowsdream.util.logging.ContactListLogger;
 import org.mapstruct.factory.Mappers;
 
 import javax.sql.DataSource;
-import java.io.FileNotFoundException;
-import java.io.IOException;
+import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.time.LocalDate;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Scanner;
 
 public class Runner {
 
@@ -35,6 +38,7 @@ public class Runner {
     private static DataSource dataSource;
     private static PersonService personService;
     private static ValidatorService validatorService;
+    private static ImportExportService importExportService;
 
 
     private static final Scanner scanner = new Scanner(System.in);
@@ -84,6 +88,7 @@ public class Runner {
                     importContacts();
                     break;
                 case "9":
+                    exportContacts();
                     break;
                 case "10":
                     PrettyPrinter.print("Exiting...\n");
@@ -257,67 +262,39 @@ public class Runner {
 
         ContactListLogger.getLog().debug("Path to file got from input: " + filePath);
 
-
+        try {
+            importExportService.importFromFile(filePath);
+            PrettyPrinter.print("Contacts have been imported successfully\n");
+        } catch (ServiceException e) {
+            PrettyPrinter.print("Could not import contacts: " + e.getMessage() + "\n");
+        }
     }
 
+    private static void exportContacts() {
+        String fileName = null;
 
-    private static PersonSaveDto getPersonSaveDtoFromData(Map<String, String> personData) {
-        Objects.requireNonNull(personData, "Argument personData must not be null");
+        boolean successfulInput = false;
+        do {
+            PrettyPrinter.print("Enter file path\n");
+            fileName = scanner.nextLine();
+            String fileSeparator = FileSystems.getDefault().getSeparator();
+            String directory = fileName.substring(0, fileName.lastIndexOf(fileSeparator));
+            Path directoryPath = Path.of(directory);
 
-        return PersonSaveDto.builder()
-                .firstName(personData.get("firstName"))
-                .lastName(personData.get("lastName"))
-                .gender(Gender.valueOf(personData.get("gender").toUpperCase()))
-                .birthday(LocalDate.parse(personData.get("birthday")))
-                .city(personData.get("city"))
-                .email(personData.get("email"))
-                .phoneNumbers(getListOfPhoneNumbersFromData(personData))
-                .build();
-    }
-
-
-    private static List<PhoneNumberSaveDto> getListOfPhoneNumbersFromData(Map<String, String> personData) {
-        List<PhoneNumberSaveDto> phoneNumberDtos = new ArrayList<>();
-        String workPhoneNumber = personData.get("workPhoneNumber");
-        String homePhoneNumber = personData.get("homePhoneNumber");
-
-        if (!workPhoneNumber.isEmpty()) {
-            phoneNumberDtos.add(PhoneNumberSaveDto.builder()
-                    .phone(workPhoneNumber)
-                    .type(PhoneType.WORK)
-                    .build());
-        }
-
-        if (!homePhoneNumber.isEmpty()) {
-            phoneNumberDtos.add(PhoneNumberSaveDto.builder()
-                    .phone(homePhoneNumber)
-                    .type(PhoneType.HOME)
-                    .build());
-        }
-
-        return phoneNumberDtos;
-    }
-
-
-    private static Map<String, String> parsePersonData(String[] personData) throws IOException {
-        Objects.requireNonNull(personData, "Argument personData must not be null");
-        if (personData.length != 8) {
-            throw new IOException("corrupted person data");
-        }
-
-        String[] keys = {"firstName", "lastName", "gender", "birthday",
-                "city", "email", "workPhoneNumber", "homePhoneNumber"};
-
-        Map<String, String> mapPersonData = new HashMap<>(8);
-        for(int i = 0; i < keys.length; i++) {
-            if(personData[i] == null) {
-                throw new IOException("person data contains null reference at " + (i + 1) + " index");
+            if (!(Files.exists(directoryPath))) {
+                PrettyPrinter.print("You must enter valid directory path\n");
+                ContactListLogger.getLog().debug("Directory path from input");
             } else {
-                mapPersonData.put(keys[i], personData[i]);
+                successfulInput = true;
             }
-        }
+        } while (!successfulInput);
 
-        return mapPersonData;
+        try {
+            importExportService.exportToFile(Path.of(fileName));
+            PrettyPrinter.print("Contacts have been exported successfully\n");
+        } catch (ServiceException e) {
+            PrettyPrinter.print("Could not export contacts to the file: " + e.getMessage());
+        }
     }
 
 
@@ -640,7 +617,8 @@ public class Runner {
         initTablesInDB();
         populateTablesInDB();
         initPersonservice();
-        initvalidatorServiceService();
+        initValidatorService();
+        initImportExportService();
     }
 
     private static void initDatasource() {
@@ -676,7 +654,11 @@ public class Runner {
         }
     }
 
-    private static void initvalidatorServiceService() {
+    private static void initValidatorService() {
         validatorService = ValidatorServiceImpl.getInstance();
+    }
+
+    private static void initImportExportService() {
+        importExportService = ImportExportServiceImpl.getInstance(dataSource);
     }
 }

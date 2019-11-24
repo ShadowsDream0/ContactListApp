@@ -21,7 +21,7 @@ public class PrettyPrinter {
             "|                        <6> - update contact                          |\n" +
             "|                        <7> - update phone number                     |\n" +
             "|                        <8> - import contacts from file               |\n" +
-            "|        <9> - export contacts from contact list (not implemented)     |\n" +
+            "|                        <9> - export contacts from contact list       |\n" +
             "|                        <10> - exit                                   |\n" +
             "|======================================================================|\n" +
             "->";
