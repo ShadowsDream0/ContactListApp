@@ -101,6 +101,7 @@
                 <configuration>
                     <includes>
                         <include>**/ValidatorServiceImpl*</include>
+                        <include>**/PersonServiceImpl*</include>
                     </includes>
                 </configuration>
 

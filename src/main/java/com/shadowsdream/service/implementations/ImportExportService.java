@@ -1,4 +1,4 @@
-package com.shadowsdream.service;
+package com.shadowsdream.service.implementations;
 
 import com.shadowsdream.exception.ServiceException;
 

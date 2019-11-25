@@ -1,6 +1,7 @@
 package com.shadowsdream.service;
 
 import com.shadowsdream.exception.InvalidInputException;
+import com.shadowsdream.service.implementations.ValidatorService;
 import com.shadowsdream.util.logging.ContactListLogger;
 
 import java.time.LocalDate;

@@ -12,6 +12,9 @@ import com.shadowsdream.exception.ServiceException;
 import com.shadowsdream.model.enums.Gender;
 import com.shadowsdream.model.enums.PhoneType;
 import com.shadowsdream.service.*;
+import com.shadowsdream.service.implementations.ImportExportService;
+import com.shadowsdream.service.implementations.PersonService;
+import com.shadowsdream.service.implementations.ValidatorService;
 import com.shadowsdream.util.io.FileReader;
 import com.shadowsdream.util.JdbcUtil;
 import com.shadowsdream.util.logging.ContactListLogger;
@@ -38,7 +41,7 @@ public class Runner {
     private static PersonService personService;
     private static ValidatorService validatorService;
     private static ImportExportService importExportService;
-    private static EmailSenderService emailSenderService;
+    private static EmailSenderServiceImpl emailSenderServiceImpl;
 
 
     private static final Scanner scanner = new Scanner(System.in);
@@ -258,7 +261,7 @@ public class Runner {
             switch (choice) {
                 case "1":
                     try {
-                        emailSenderService.sendEmail(importExportService.getContactsLines(), recipient);
+                        emailSenderServiceImpl.sendEmail(importExportService.getContactsLines(), recipient);
                         PrettyPrinter.print("Email was sent successfully\n");
                         successfulInput = true;
                     } catch (ServiceException e) {
@@ -269,9 +272,10 @@ public class Runner {
                     break;
 
                 case "2":
+                    PrettyPrinter.print("Enter path of a file you want to send\n");
                     String attachmentPath = scanner.nextLine();
                     try {
-                        emailSenderService.sendEmailWithAttachment(recipient, attachmentPath);
+                        emailSenderServiceImpl.sendEmailWithAttachment(recipient, attachmentPath);
                         PrettyPrinter.print("Email was sent successfully\n");
                         successfulInput = true;
                     } catch (ServiceException e) {
@@ -666,6 +670,7 @@ public class Runner {
         initPersonservice();
         initValidatorService();
         initImportExportService();
+        initEmailSenderService();
     }
 
     private static void initDatasource() {
@@ -711,7 +716,7 @@ public class Runner {
 
     private static void initEmailSenderService() {
         try {
-            emailSenderService = EmailSenderService.getInstance();
+            emailSenderServiceImpl = EmailSenderServiceImpl.getInstance();
         } catch (ServiceException e) {
             PrettyPrinter.printError("Warning! File with email properties not found. " +
                     "Application is running in restricted mode");

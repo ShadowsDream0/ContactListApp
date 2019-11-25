@@ -1,12 +1,10 @@
-package com.shadowsdream.service;
+package com.shadowsdream.service.implementations;
 
 import com.shadowsdream.dto.PersonDto;
 import com.shadowsdream.dto.PersonSaveDto;
 import com.shadowsdream.dto.PersonViewDto;
 import com.shadowsdream.dto.PhoneNumberDto;
 import com.shadowsdream.exception.PersonServiceException;
-import com.shadowsdream.model.Person;
-import com.shadowsdream.model.PhoneNumber;
 
 import java.util.List;
 

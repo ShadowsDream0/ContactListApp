@@ -20,15 +20,15 @@ public final class EmailSenderImpl implements EmailSender{
     private Session session;
 
 
-    public EmailSenderImpl(String emailPropertiesFile, Properties smtpProperties) throws FileNotFoundException {
-        Objects.requireNonNull(emailPropertiesFile, "Argument emailPropertiesFile must not be null");
+    public EmailSenderImpl(String senderInfoFile, Properties smtpProperties) throws FileNotFoundException {
+        Objects.requireNonNull(senderInfoFile, "Argument emailPropertiesFile must not be null");
         Objects.requireNonNull(smtpProperties, "Argument smtpProperties must not be null");
 
-        List<String> info = getSenderInfoFromFile(emailPropertiesFile);
+        List<String> info = getSenderInfoFromFile(senderInfoFile);
         senderName = info.get(0);
         senderPassword = info.get(1);
 
-        setSession(smtpProperties);
+        prepareSession(smtpProperties);
     }
 
     @Override
@@ -37,7 +37,12 @@ public final class EmailSenderImpl implements EmailSender{
         Objects.requireNonNull(subject, "Argument subject must not be null");
         Objects.requireNonNull(recipient, "Argument recipient must not be null");
 
-        Transport.send(prepareMessage(text, subject, recipient));
+        Message message = prepareMessage(subject, recipient);
+        Multipart multipart = prepareTextMultipart(text);
+
+        message.setContent(multipart);
+
+        Transport.send(message);
     }
 
     @Override
@@ -48,25 +53,35 @@ public final class EmailSenderImpl implements EmailSender{
         Objects.requireNonNull(recipient, "Argument recipient must not be null");
         Objects.requireNonNull(attachmentPath, "Argument attachmentPath must not be null");
 
-        Multipart multipart = new MimeMultipart();
-        MimeBodyPart bodyPart = new MimeBodyPart();
-        bodyPart.attachFile(attachmentPath);
-        multipart.addBodyPart(bodyPart);
+        Message message = prepareMessage(subject, recipient);
+        Multipart multipart = prepareTextMultipart(text);
 
-        Message message = prepareMessage(text, subject, recipient);
+        MimeBodyPart fileBodyPart = new MimeBodyPart();
+
+        fileBodyPart.attachFile(attachmentPath);
+        multipart.addBodyPart(fileBodyPart);
+
         message.setContent(multipart);
 
         Transport.send(message);
     }
 
-    private Message prepareMessage(String text, String subject, String recipient) throws MessagingException {
+    private Message prepareMessage(String subject, String recipient) throws MessagingException {
         Message message = new MimeMessage(session);
         message.setFrom(new InternetAddress(senderName));
         message.setRecipient(Message.RecipientType.TO, new InternetAddress(recipient));
         message.setSubject(subject);
-        message.setText(text);
 
         return message;
+    }
+
+    private Multipart prepareTextMultipart(String text) throws MessagingException {
+        Multipart multipart = new MimeMultipart();
+        MimeBodyPart messageBodyPart = new MimeBodyPart();
+        messageBodyPart.setText(text);
+        multipart.addBodyPart(messageBodyPart);
+
+        return multipart;
     }
 
     private List<String> getSenderInfoFromFile(String fileName) throws FileNotFoundException {
@@ -79,7 +94,7 @@ public final class EmailSenderImpl implements EmailSender{
                 .collect(Collectors.toList());
     }
 
-    private void setSession(Properties smtpProperties) {
+    private void prepareSession(Properties smtpProperties) {
         session = Session.getDefaultInstance(smtpProperties, new Authenticator() {
             @Override
             protected PasswordAuthentication getPasswordAuthentication() {

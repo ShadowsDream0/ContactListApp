@@ -5,6 +5,7 @@ import com.shadowsdream.dao.*;
 import com.shadowsdream.dto.*;
 import com.shadowsdream.dto.mappers.*;
 import com.shadowsdream.exception.*;
+import com.shadowsdream.service.implementations.PersonService;
 import com.shadowsdream.util.logging.ContactListLogger;
 
 import org.mapstruct.factory.Mappers;

@@ -1,6 +1,9 @@
 package com.shadowsdream.service;
 
 import com.shadowsdream.exception.ServiceException;
+import com.shadowsdream.service.implementations.EmailService;
+import com.shadowsdream.service.implementations.ValidatorService;
+import com.shadowsdream.util.PropertyLoader;
 import com.shadowsdream.util.email.EmailSender;
 import com.shadowsdream.util.email.EmailSenderImpl;
 import com.shadowsdream.util.logging.ContactListLogger;
@@ -12,33 +15,33 @@ import java.io.IOException;
 import java.util.Objects;
 import java.util.Properties;
 
-public final class EmailSenderService {
+public final class EmailSenderServiceImpl implements EmailService {
     private static EmailSender emailSender;
-    private static EmailSenderService emailSenderService;
+    private static EmailSenderServiceImpl emailSenderServiceImpl;
     private static ValidatorService validatorService;
 
-    private static final String PATH_TO_EMAIL_PROPERTIES = "/home/shadows-dream/Documents/email-properties.txt";
+    private static final String PATH_TO_SENDER_INFO = "/home/shadows-dream/Documents/sender-info.txt";
 
     private static final String TEXT = "Hi, user!\nThis email was sent by ContactListApp." +
-                                        " You can find all of your contacts in the attachment above";
+                                        " Your contacts were exported successfully\n";
     private static final String SUBJECT = "Exported contacts from ContactListApp";
 
 
-    private EmailSenderService(){}
+    private EmailSenderServiceImpl(){}
 
-    public static EmailSenderService getInstance() throws ServiceException {
-        if (emailSenderService == null) {
+    public static EmailSenderServiceImpl getInstance() throws ServiceException {
+        if (emailSenderServiceImpl == null) {
             try {
-                emailSender = new EmailSenderImpl(PATH_TO_EMAIL_PROPERTIES, getProperties());
+                emailSender = new EmailSenderImpl(PATH_TO_SENDER_INFO, getProperties());
             } catch (FileNotFoundException e) {
                 throw new ServiceException("File with email properties not found");
             }
 
             validatorService = ValidatorServiceImpl.getInstance();
-            emailSenderService = new EmailSenderService();
+            emailSenderServiceImpl = new EmailSenderServiceImpl();
         }
 
-        return emailSenderService;
+        return emailSenderServiceImpl;
     }
 
     public void sendEmail(String text, String recipient) throws ServiceException {
@@ -47,7 +50,7 @@ public final class EmailSenderService {
         validatorService.validateEmail(recipient);
 
         try {
-            emailSender.sendEmail(text, SUBJECT, recipient);
+            emailSender.sendEmail(TEXT + text, SUBJECT, recipient);
         } catch (AddressException ae) {
             throw new ServiceException("recipient address is not valid" + ae.getMessage());
         } catch (MessagingException me) {
@@ -77,12 +80,16 @@ public final class EmailSenderService {
     }
 
     private static Properties getProperties() {
-        Properties properties = new Properties();
-        properties.put("mail.smtp.starttls.enable", "true");
-        properties.put("mail.smtp.host", "smtp.gmail.com");
-        properties.put("mail.smtp.port", "587");
-        properties.put("mail.smtp.auth", "true");
+        Properties smtpProperties = null;
 
-        return properties;
+        try {
+            smtpProperties = PropertyLoader.getSmtpProtrties();
+        } catch (IOException e) {
+            ContactListLogger.getLog().debug("Error occurred during loading smtp properties from file " + e.getMessage() + " " + e.getCause());
+            PrettyPrinter.printError("Application was not configured properly for sending email. Exiting...\n");
+            System.exit(1);
+        }
+
+        return smtpProperties;
     }
 }
