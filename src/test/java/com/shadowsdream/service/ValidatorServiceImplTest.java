@@ -37,7 +37,7 @@ class ValidatorServiceImplTest {
         );
     }
 
-    @Disabled
+    
     @ParameterizedTest
     @DisplayName("[mail-long] Should throw InvalidInputException when passed in email over 254 chars")
     @ValueSource(strings = { "123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890" +
@@ -55,7 +55,7 @@ class ValidatorServiceImplTest {
         );
     }
 
-    @Disabled
+    
     @ParameterizedTest
     @DisplayName("[mail-invalid] Should throw InvalidInputException when passed in invalid email")
     @ValueSource(strings = { "$asd@gmail.com", "@mail.com", "foo@*.com", "foo@gmail", "foo@gmail.abcdefh" })
@@ -85,7 +85,7 @@ class ValidatorServiceImplTest {
         assertEquals("Argument dateString must not be null", actual.getMessage());
     }
 
-    @Disabled
+    
     @ParameterizedTest
     @DisplayName("[birthday-invalid] Should throw InvalidInputException with message 'date is not valid'")
     @ValueSource(strings = { "", "1989", "12-07-1989", "1989.07.12", "100000-07-12", "1989-13-07", "1989-07-32" })
@@ -95,7 +95,7 @@ class ValidatorServiceImplTest {
         assertEquals("date is not valid", actual.getMessage());
     }
 
-    @Disabled
+    
     @ParameterizedTest
     @DisplayName("[birthday-old] Should throw InvalidInputException with message 'you can't be that old'")
     @ValueSource(strings = { "1654-09-11", "1898-11-18" })
@@ -105,7 +105,7 @@ class ValidatorServiceImplTest {
         assertEquals("you can't be that old", actual.getMessage());
     }
 
-    @Disabled
+    
     @ParameterizedTest
     @DisplayName("[birthday-young] Should throw InvalidInputException with message 'you are underage to use this application'")
     @ValueSource(strings = { "2019-11-18", "2002-11-18" })

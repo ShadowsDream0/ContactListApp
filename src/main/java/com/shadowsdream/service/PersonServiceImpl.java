@@ -9,6 +9,7 @@ import com.shadowsdream.service.implementations.PersonService;
 import com.shadowsdream.util.logging.ContactListLogger;
 
 import org.mapstruct.factory.Mappers;
+import org.mockito.Mock;
 
 import javax.sql.DataSource;
 import java.util.List;
@@ -18,6 +19,7 @@ import java.util.stream.Collectors;
 
 public class PersonServiceImpl implements PersonService {
 
+    @Mock
     private PersonDao personDao = null;
 
 
@@ -29,6 +31,8 @@ public class PersonServiceImpl implements PersonService {
 
 
     public Long save(PersonSaveDto personSaveDto) throws PersonServiceException{
+        Objects.requireNonNull(personSaveDto, "Argument personSaveDto must not be null");
+
         ContactListLogger.getLog().info("Invoked save() method...");
 
         PersonSaveDtoMapper mapper = Mappers.getMapper(PersonSaveDtoMapper.class);
@@ -53,9 +57,10 @@ public class PersonServiceImpl implements PersonService {
 
         List<PersonViewDto> personViewDtoList = null;
         try {
-            personViewDtoList = personDao.findAll().stream()
-                        .map(mapper::toDto)
-                    .collect(Collectors.toList());
+            personViewDtoList = personDao.findAll()
+                                            .stream()
+                                            .map(mapper::toDto)
+                                            .collect(Collectors.toList());
         } catch (DaoOperationException e) {
             ContactListLogger.getLog().error("Critical error occurred: " + e.getMessage() + " " + e.getCause());
             PrettyPrinter.printError("Server critical error. Exiting...");
@@ -68,6 +73,8 @@ public class PersonServiceImpl implements PersonService {
 
     public PersonDto findById(Long id) throws PersonServiceException {
         ContactListLogger.getLog().info("Invoked findById() method...");
+        Objects.requireNonNull(id, "Argument id must not be null");
+
 
         PersonDtoMapper mapper = Mappers.getMapper(PersonDtoMapper.class);
         PersonDto personDto = null;
@@ -86,6 +93,8 @@ public class PersonServiceImpl implements PersonService {
 
     public void updatePerson(PersonDto personDto) {
         ContactListLogger.getLog().info("Invoked updatePerson() method...");
+        Objects.requireNonNull(personDto, "Argument personDto must not be null");
+
 
         PersonDtoMapper mapper = Mappers.getMapper(PersonDtoMapper.class);
 
@@ -101,6 +110,8 @@ public class PersonServiceImpl implements PersonService {
 
     public void updatePhoneNumber(PhoneNumberDto phoneNumberDto) {
         ContactListLogger.getLog().info("Invoked updatePhoneNumber() method...");
+        Objects.requireNonNull(phoneNumberDto, "Argument phoneNumberDto must not be null");
+
 
         PhoneNumberDtoMapper mapper = Mappers.getMapper(PhoneNumberDtoMapper.class);
 
@@ -116,6 +127,8 @@ public class PersonServiceImpl implements PersonService {
 
     public void removePerson(Long id) throws PersonServiceException {
         ContactListLogger.getLog().info("Invoked removePerson() method...");
+        Objects.requireNonNull(id, "Argument id must not be null");
+
         try {
             personDao.removePerson(id);
         } catch (DeleteOperationException deleteEx) {
@@ -130,6 +143,8 @@ public class PersonServiceImpl implements PersonService {
 
     public void removePhoneNumber(Long id) throws PersonServiceException {
         ContactListLogger.getLog().info("Invoked removePhoneNumber() method...");
+        Objects.requireNonNull(id, "Argument id must not be null");
+
         try {
             personDao.removePhoneNumber(id);
         } catch (DeleteOperationException deleteEx) {
