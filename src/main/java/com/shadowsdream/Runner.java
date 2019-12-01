@@ -6,27 +6,31 @@ import com.shadowsdream.dto.PhoneNumberDto;
 import com.shadowsdream.dto.PhoneNumberSaveDto;
 import com.shadowsdream.dto.mappers.PhoneNumberDtoMapper;
 import com.shadowsdream.dto.mappers.PhoneNumberSaveDtoMapper;
-import com.shadowsdream.exception.*;
-import com.shadowsdream.model.Person;
+import com.shadowsdream.exception.InvalidInputException;
+import com.shadowsdream.exception.PersonServiceException;
+import com.shadowsdream.exception.ServiceException;
 import com.shadowsdream.model.enums.Gender;
 import com.shadowsdream.model.enums.PhoneType;
 import com.shadowsdream.service.*;
-import com.shadowsdream.util.FileReader;
+import com.shadowsdream.service.implementations.ImportExportService;
+import com.shadowsdream.service.implementations.PersonService;
+import com.shadowsdream.service.implementations.ValidatorService;
+import com.shadowsdream.util.io.FileReader;
 import com.shadowsdream.util.JdbcUtil;
-import com.shadowsdream.util.PropertyLoader;
 import com.shadowsdream.util.logging.ContactListLogger;
 import org.mapstruct.factory.Mappers;
 
 import javax.sql.DataSource;
-import java.io.FileNotFoundException;
-import java.io.IOException;
+import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.time.LocalDate;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Scanner;
 
 public class Runner {
 
@@ -36,6 +40,8 @@ public class Runner {
     private static DataSource dataSource;
     private static PersonService personService;
     private static ValidatorService validatorService;
+    private static ImportExportService importExportService;
+    private static EmailSenderServiceImpl emailSenderServiceImpl;
 
 
     private static final Scanner scanner = new Scanner(System.in);
@@ -85,8 +91,12 @@ public class Runner {
                     importContacts();
                     break;
                 case "9":
+                    exportContacts();
                     break;
                 case "10":
+                    sendContactsByEmail();
+                    break;
+                case "11":
                     PrettyPrinter.print("Exiting...\n");
                     System.exit(0);
                     break;
@@ -239,8 +249,52 @@ public class Runner {
     }
 
 
-    private static void importContacts() { // todo: make separate class
-        // get path from input
+    private static void sendContactsByEmail() {
+        boolean successfulInput = false;
+
+        MAIN_LOOP: do {
+            PrettyPrinter.print("Select action: 1 - send contacts in a message, 2 - send contacts in an attached file\n");
+            String choice = scanner.nextLine();
+            PrettyPrinter.print("Enter email address\n");
+            String recipient = scanner.nextLine();
+
+            switch (choice) {
+                case "1":
+                    try {
+                        emailSenderServiceImpl.sendEmail(importExportService.getContactsLines(), recipient);
+                        PrettyPrinter.print("Email was sent successfully\n");
+                        successfulInput = true;
+                    } catch (ServiceException e) {
+                        PrettyPrinter.printError("Can not send email: " + e.getMessage() + "\n");
+                        break MAIN_LOOP;
+                    }
+
+                    break;
+
+                case "2":
+                    PrettyPrinter.print("Enter path of a file you want to send\n");
+                    String attachmentPath = scanner.nextLine();
+                    try {
+                        emailSenderServiceImpl.sendEmailWithAttachment(recipient, attachmentPath);
+                        PrettyPrinter.print("Email was sent successfully\n");
+                        successfulInput = true;
+                    } catch (ServiceException e) {
+                        PrettyPrinter.printError("Can not send email: " + e.getMessage() + "\n");
+                        break MAIN_LOOP;
+                    }
+
+                    break;
+
+                default:
+                    PrettyPrinter.print("You must choose only from two options below\n");
+                    break;
+            }
+
+        } while (!successfulInput);
+
+    }
+
+    private static void importContacts() {
         boolean successfulInput = false;
         String fileName = null;
         Path filePath = null;
@@ -259,101 +313,39 @@ public class Runner {
 
         ContactListLogger.getLog().debug("Path to file got from input: " + filePath);
 
-        // read person data from file
-        List<String[]> linesWithPersonData = null;
         try {
-            linesWithPersonData = FileReader.getListOfStringArraysFromPath(filePath);
-        } catch (FileNotFoundException e) {
-            PrettyPrinter.printError("Could not find property file\n");
-            return;
-        } catch (IOException notFoundEx) {
-            PrettyPrinter.printError("Could not read file\n");
-            return;
+            importExportService.importFromFile(filePath);
+            PrettyPrinter.print("Contacts have been imported successfully\n");
+        } catch (ServiceException e) {
+            PrettyPrinter.print("Could not import contacts: " + e.getMessage() + "\n");
         }
-
-        ContactListLogger.getLog().debug("Lines with person data got: " + linesWithPersonData.get(0));
-
-        // save contacts to db
-        PersonSaveDto personSaveDto = null;
-        int sizeOfList = linesWithPersonData.size();
-        for(int line = 0 ; line < sizeOfList; line++) {
-            try {
-                personSaveDto = getPersonSaveDtoFromData(parsePersonData(linesWithPersonData.get(line)));
-            } catch (IOException e) {
-                PrettyPrinter.print("Import failed on line " + (line + 1) + ". Cause: " + e.getMessage() + "\n");
-                PrettyPrinter.print("Exiting...\n");
-                System.exit(1);
-            }
-
-            try {
-                personService.save(personSaveDto);
-            } catch (PersonServiceException e) {
-                PrettyPrinter.print("Could not save contact because " + e.getMessage());
-                return;
-            }
-        }
-
-        PrettyPrinter.print("Contacts have been imported successfully\n");
     }
 
+    private static void exportContacts() {
+        String fileName = null;
 
-    private static PersonSaveDto getPersonSaveDtoFromData(Map<String, String> personData) {
-        Objects.requireNonNull(personData, "Argument personData must not be null");
+        boolean successfulInput = false;
+        do {
+            PrettyPrinter.print("Enter file path\n");
+            fileName = scanner.nextLine();
+            String fileSeparator = FileSystems.getDefault().getSeparator();
+            String directory = fileName.substring(0, fileName.lastIndexOf(fileSeparator));
+            Path directoryPath = Path.of(directory);
 
-        return PersonSaveDto.builder()
-                .firstName(personData.get("firstName"))
-                .lastName(personData.get("lastName"))
-                .gender(Gender.valueOf(personData.get("gender").toUpperCase()))
-                .birthday(LocalDate.parse(personData.get("birthday")))
-                .city(personData.get("city"))
-                .email(personData.get("email"))
-                .phoneNumbers(getListOfPhoneNumbersFromData(personData))
-                .build();
-    }
-
-
-    private static List<PhoneNumberSaveDto> getListOfPhoneNumbersFromData(Map<String, String> personData) {
-        List<PhoneNumberSaveDto> phoneNumberDtos = new ArrayList<>();
-        String workPhoneNumber = personData.get("workPhoneNumber");
-        String homePhoneNumber = personData.get("homePhoneNumber");
-
-        if (!workPhoneNumber.isEmpty()) {
-            phoneNumberDtos.add(PhoneNumberSaveDto.builder()
-                    .phone(workPhoneNumber)
-                    .type(PhoneType.WORK)
-                    .build());
-        }
-
-        if (!homePhoneNumber.isEmpty()) {
-            phoneNumberDtos.add(PhoneNumberSaveDto.builder()
-                    .phone(homePhoneNumber)
-                    .type(PhoneType.HOME)
-                    .build());
-        }
-
-        return phoneNumberDtos;
-    }
-
-
-    private static Map<String, String> parsePersonData(String[] personData) throws IOException {
-        Objects.requireNonNull(personData, "Argument personData must not be null");
-        if (personData.length != 8) {
-            throw new IOException("corrupted person data");
-        }
-
-        String[] keys = {"firstName", "lastName", "gender", "birthday",
-                "city", "email", "workPhoneNumber", "homePhoneNumber"};
-
-        Map<String, String> mapPersonData = new HashMap<>(8);
-        for(int i = 0; i < keys.length; i++) {
-            if(personData[i] == null) {
-                throw new IOException("person data contains null reference at " + (i + 1) + " index");
+            if (!(Files.exists(directoryPath))) {
+                PrettyPrinter.print("You must enter valid directory path\n");
+                ContactListLogger.getLog().debug("Directory path from input");
             } else {
-                mapPersonData.put(keys[i], personData[i]);
+                successfulInput = true;
             }
-        }
+        } while (!successfulInput);
 
-        return mapPersonData;
+        try {
+            importExportService.exportToFile(Path.of(fileName));
+            PrettyPrinter.print("Contacts have been exported successfully\n");
+        } catch (ServiceException e) {
+            PrettyPrinter.print("Could not export contacts to the file: " + e.getMessage());
+        }
     }
 
 
@@ -676,7 +668,9 @@ public class Runner {
         initTablesInDB();
         populateTablesInDB();
         initPersonservice();
-        initvalidatorServiceService();
+        initValidatorService();
+        initImportExportService();
+        initEmailSenderService();
     }
 
     private static void initDatasource() {
@@ -712,7 +706,20 @@ public class Runner {
         }
     }
 
-    public static void initvalidatorServiceService() {
+    private static void initValidatorService() {
         validatorService = ValidatorServiceImpl.getInstance();
+    }
+
+    private static void initImportExportService() {
+        importExportService = ImportExportServiceImpl.getInstance(dataSource);
+    }
+
+    private static void initEmailSenderService() {
+        try {
+            emailSenderServiceImpl = EmailSenderServiceImpl.getInstance();
+        } catch (ServiceException e) {
+            PrettyPrinter.printError("Warning! File with email properties not found. " +
+                    "Application is running in restricted mode");
+        }
     }
 }

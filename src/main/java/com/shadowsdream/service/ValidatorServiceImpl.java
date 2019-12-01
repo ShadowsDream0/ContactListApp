@@ -1,6 +1,7 @@
 package com.shadowsdream.service;
 
 import com.shadowsdream.exception.InvalidInputException;
+import com.shadowsdream.service.implementations.ValidatorService;
 import com.shadowsdream.util.logging.ContactListLogger;
 
 import java.time.LocalDate;
@@ -9,7 +10,7 @@ import java.time.format.DateTimeParseException;
 import java.util.Objects;
 import java.util.regex.Pattern;
 
-public class ValidatorServiceImpl implements ValidatorService {
+public final class ValidatorServiceImpl implements ValidatorService {
 
     private static final int MIN_EMAIL_LENGTH = 6;
     private static final int MAX_EMAIL_LENGTH = 254;
