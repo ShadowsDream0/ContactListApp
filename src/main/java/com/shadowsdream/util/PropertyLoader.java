@@ -1,11 +1,12 @@
 package com.shadowsdream.util;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Properties;
 import java.io.FileReader;
 
 public class PropertyLoader {
+
+    private PropertyLoader(){}
 
     public static String getProperties() throws IOException {
         Properties p = new Properties();
