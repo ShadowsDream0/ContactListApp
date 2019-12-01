@@ -1,8 +1,9 @@
-package com.shadowsdream.service;
+package com.shadowsdream.service.implementations;
 
 import com.shadowsdream.exception.ServiceException;
-import com.shadowsdream.service.implementations.EmailService;
-import com.shadowsdream.service.implementations.ValidatorService;
+import com.shadowsdream.service.EmailService;
+import com.shadowsdream.service.PrettyPrinter;
+import com.shadowsdream.service.ValidatorService;
 import com.shadowsdream.util.PropertyLoader;
 import com.shadowsdream.util.email.EmailSender;
 import com.shadowsdream.util.email.EmailSenderImpl;
@@ -20,7 +21,7 @@ public final class EmailSenderServiceImpl implements EmailService {
     private static EmailSenderServiceImpl emailSenderServiceImpl;
     private static ValidatorService validatorService;
 
-    private static final String PATH_TO_SENDER_INFO = "/home/shadows-dream/Documents/sender-info.txt";
+    private static final String PATH_TO_SENDER_INFO = "/home/shadows-dream/Documents/credentials.txt";
 
     private static final String TEXT = "Hi, user!\nThis email was sent by ContactListApp." +
                                         " Your contacts were exported successfully\n";

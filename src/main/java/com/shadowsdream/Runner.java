@@ -1,22 +1,15 @@
 package com.shadowsdream;
 
-import com.shadowsdream.dto.PersonDto;
-import com.shadowsdream.dto.PersonSaveDto;
-import com.shadowsdream.dto.PhoneNumberDto;
-import com.shadowsdream.dto.PhoneNumberSaveDto;
-import com.shadowsdream.dto.mappers.PhoneNumberDtoMapper;
-import com.shadowsdream.dto.mappers.PhoneNumberSaveDtoMapper;
+import com.shadowsdream.dto.*;
+import com.shadowsdream.dto.mappers.*;
 import com.shadowsdream.exception.InvalidInputException;
 import com.shadowsdream.exception.PersonServiceException;
 import com.shadowsdream.exception.ServiceException;
-import com.shadowsdream.model.enums.Gender;
-import com.shadowsdream.model.enums.PhoneType;
+import com.shadowsdream.model.enums.*;
 import com.shadowsdream.service.*;
-import com.shadowsdream.service.implementations.ImportExportService;
-import com.shadowsdream.service.implementations.PersonService;
-import com.shadowsdream.service.implementations.ValidatorService;
-import com.shadowsdream.util.io.FileReader;
+import com.shadowsdream.service.implementations.*;
 import com.shadowsdream.util.JdbcUtil;
+import com.shadowsdream.util.io.FileReader;
 import com.shadowsdream.util.logging.ContactListLogger;
 import org.mapstruct.factory.Mappers;
 
