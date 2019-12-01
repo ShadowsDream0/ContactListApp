@@ -21,7 +21,7 @@ public final class EmailSenderServiceImpl implements EmailService {
     private static EmailSenderServiceImpl emailSenderServiceImpl;
     private static ValidatorService validatorService;
 
-    private static final String PATH_TO_SENDER_INFO = "/home/shadows-dream/Documents/credentials.txt";
+    private static final String PATH_TO_CREDENTIALS = "/home/shadows-dream/Documents/credentials.txt";
 
     private static final String TEXT = "Hi, user!\nThis email was sent by ContactListApp." +
                                         " Your contacts were exported successfully\n";
@@ -33,7 +33,7 @@ public final class EmailSenderServiceImpl implements EmailService {
     public static EmailSenderServiceImpl getInstance() throws ServiceException {
         if (emailSenderServiceImpl == null) {
             try {
-                emailSender = new EmailSenderImpl(PATH_TO_SENDER_INFO, getProperties());
+                emailSender = new EmailSenderImpl(PATH_TO_CREDENTIALS, getProperties());
             } catch (FileNotFoundException e) {
                 throw new ServiceException("File with email properties not found");
             }

@@ -90,9 +90,11 @@ public class Runner {
                     sendContactsByEmail();
                     break;
                 case "11":
+                    startMonitoring();
+                    break;
+                case "12":
                     PrettyPrinter.print("Exiting...\n");
                     System.exit(0);
-                    break;
                 default:
                     PrettyPrinter.print("You should choose number from the menu below\n");
                     break;
@@ -101,6 +103,39 @@ public class Runner {
             PrettyPrinter.printPressAnyKey();
             scanner.nextLine();
         }
+    }
+
+    private static void startMonitoring(){
+        Path folder = getFilePath();
+        ContactListLogger.getLog().debug("Path to folder got from input: " + folder);
+
+        try {
+            importExportService.importFromFolder(folder);
+            importExportService.setMonitorStatus(true);
+            PrettyPrinter.print("Started scanning folder\n");
+        } catch (RuntimeException e) {
+            PrettyPrinter.printError("Could not import contacts: " + e.getMessage() + "\n");
+        }
+    }
+
+    private static Path getFilePath() {
+        boolean successfulInput = false;
+        String fileName = null;
+        Path filePath = null;
+
+        do {
+            PrettyPrinter.print("Enter file path\n");
+            fileName = scanner.nextLine();
+            filePath = Path.of(fileName);
+            if (!(Files.exists(filePath))) {
+                PrettyPrinter.print("You must enter valid path to the file\n");
+            } else {
+                successfulInput = true;
+            }
+
+        } while (!successfulInput);
+
+        return filePath;
     }
 
 
@@ -245,7 +280,7 @@ public class Runner {
     private static void sendContactsByEmail() {
         boolean successfulInput = false;
 
-        MAIN_LOOP: do {
+        do {
             PrettyPrinter.print("Select action: 1 - send contacts in a message, 2 - send contacts in an attached file\n");
             String choice = scanner.nextLine();
             PrettyPrinter.print("Enter email address\n");
@@ -259,7 +294,7 @@ public class Runner {
                         successfulInput = true;
                     } catch (ServiceException e) {
                         PrettyPrinter.printError("Can not send email: " + e.getMessage() + "\n");
-                        break MAIN_LOOP;
+                        break;
                     }
 
                     break;
@@ -273,7 +308,7 @@ public class Runner {
                         successfulInput = true;
                     } catch (ServiceException e) {
                         PrettyPrinter.printError("Can not send email: " + e.getMessage() + "\n");
-                        break MAIN_LOOP;
+                        break;
                     }
 
                     break;
@@ -288,21 +323,7 @@ public class Runner {
     }
 
     private static void importContacts() {
-        boolean successfulInput = false;
-        String fileName = null;
-        Path filePath = null;
-
-        do {
-            PrettyPrinter.print("Enter file path\n");
-            fileName = scanner.nextLine();
-            filePath = Path.of(fileName);
-            if (!(Files.exists(filePath))) {
-                PrettyPrinter.print("You must enter valid path to the file\n");
-            } else {
-                successfulInput = true;
-            }
-
-        } while (!successfulInput);
+        Path filePath = getFilePath();
 
         ContactListLogger.getLog().debug("Path to file got from input: " + filePath);
 

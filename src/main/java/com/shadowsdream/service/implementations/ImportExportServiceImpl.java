@@ -11,6 +11,8 @@ import com.shadowsdream.model.enums.Gender;
 import com.shadowsdream.model.enums.PhoneType;
 import com.shadowsdream.service.ImportExportService;
 import com.shadowsdream.service.PrettyPrinter;
+import com.shadowsdream.util.foldermonitor.FolderMonitor;
+import com.shadowsdream.util.foldermonitor.FolderMonitorImpl;
 import com.shadowsdream.util.io.FileReader;
 import com.shadowsdream.util.io.FileReaderException;
 import com.shadowsdream.util.PropertyLoader;
@@ -18,17 +20,23 @@ import com.shadowsdream.util.logging.ContactListLogger;
 
 import javax.sql.DataSource;
 import java.io.BufferedWriter;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDate;
 import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 public final class ImportExportServiceImpl implements ImportExportService {
 
-    private static PersonDao personDao;
-    private static ImportExportService importExportService;
+    private static PersonDao personDao = null;
+    private static ImportExportService importExportService = null;
+    private boolean scanningStatus = false;
+
 
     private ImportExportServiceImpl(){}
 
@@ -75,6 +83,7 @@ public final class ImportExportServiceImpl implements ImportExportService {
         }
     }
 
+
     @Override
     public void exportToFile(Path filePath) throws ServiceException {
         // write contacts to a file
@@ -85,6 +94,8 @@ public final class ImportExportServiceImpl implements ImportExportService {
         }
     }
 
+
+    @Override
     public String getContactsLines() throws ServiceException {
         // get all contacts from db
         List<Person> persons = null;
@@ -144,6 +155,58 @@ public final class ImportExportServiceImpl implements ImportExportService {
                             .toString();
                 })
                 .collect(Collectors.joining("\n"));
+    }
+
+
+    @Override
+    public void importFromFolder(Path folderPath) {
+        int threadNumber = 1;
+
+        ExecutorService executorService = Executors.newFixedThreadPool(threadNumber);
+
+        executorService.submit(() -> this.initFolderMonitor(folderPath));
+
+        executorService.shutdown();
+
+        try {
+            executorService.awaitTermination(1, TimeUnit.DAYS);
+        } catch (InterruptedException ie) {
+            ContactListLogger.getLog().debug("Thread interrupted " + ie.getMessage() + " " + ie.getCause());
+            return;
+        }
+    }
+
+
+    private void initFolderMonitor(Path folderPath) {
+        Objects.requireNonNull(folderPath, "Argument folderPath must not be null");
+
+        FolderMonitor folderMonitor = null;
+        try {
+            folderMonitor = new FolderMonitorImpl(folderPath);
+            folderMonitor.setMonitorStatus(this.scanningStatus);
+            folderMonitor.start();
+        } catch (FileNotFoundException fe) {
+            throw new RuntimeException("could not read folder: " + fe.getMessage());
+        } catch (IOException e) {
+            throw new RuntimeException("could not read file: " + e.getMessage());
+        } catch (InterruptedException ie) {
+            ContactListLogger.getLog().debug("Thread interrupted " + ie.getMessage() + " " + ie.getCause());
+            return;
+        }
+        List<Path> files = folderMonitor.getListOfFilesFromFolder();
+
+        for (Path file : files) {
+            try {
+                this.importFromFile(file);
+            } catch (ServiceException e) {
+                throw new RuntimeException(e.getMessage());
+            }
+        }
+    }
+
+    @Override
+    public void setMonitorStatus(boolean scanningStatus) {
+        this.scanningStatus = scanningStatus;
     }
 
     private static Map<String, String> parsePersonData(String[] personData) throws IOException {

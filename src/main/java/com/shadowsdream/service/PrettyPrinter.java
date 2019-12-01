@@ -23,7 +23,8 @@ public class PrettyPrinter {
             "|                        <8> - import contacts from file               |\n" +
             "|                        <9> - export contacts to file                 |\n" +
             "|                        <10> - send exported contacts by email        |\n" +
-            "|                        <11> - exit                                   |\n" +
+            "|                        <11> - start monitoring folder                |\n" +
+            "|                        <12> - exit                                   |\n" +
             "|======================================================================|\n" +
             "->";
 
