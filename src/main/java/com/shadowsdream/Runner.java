@@ -41,6 +41,9 @@ public class Runner {
 
     private static String dataBase;
 
+    private static boolean scanningEnabled = false;
+    private static Path folderToScan = null;
+
 
     public static void main(String[] args) {
 
@@ -90,7 +93,7 @@ public class Runner {
                     sendContactsByEmail();
                     break;
                 case "11":
-                    startMonitoring();
+                    setScanningMode();
                     break;
                 case "12":
                     PrettyPrinter.print("Exiting...\n");
@@ -105,17 +108,36 @@ public class Runner {
         }
     }
 
-    private static void startMonitoring(){
-        Path folder = getFilePath();
-        ContactListLogger.getLog().debug("Path to folder got from input: " + folder);
+    private static void setScanningMode(){
+        MAIN_LOOP: do {
+            PrettyPrinter.print("Do you want to activate import from folder?\ny/n: ");
+            String choice = scanner.nextLine();
 
-        try {
-            importExportService.importFromFolder(folder);
-            importExportService.setMonitorStatus(true);
-            PrettyPrinter.print("Started scanning folder\n");
-        } catch (RuntimeException e) {
-            PrettyPrinter.printError("Could not import contacts: " + e.getMessage() + "\n");
-        }
+            switch (choice) {
+                case "y":
+                    if (scanningEnabled) {
+                        PrettyPrinter.print("Already set to scan folder: " + folderToScan.getFileName());
+                        break;
+                    }
+
+                    scanningEnabled = true;
+                    folderToScan = getFilePath();
+                    PrettyPrinter.print("Folder scanning activated\n");
+                    ContactListLogger.getLog().debug("Path to folder to scan got from input: " + folderToScan);
+                    break MAIN_LOOP;
+
+                case "n":
+                    scanningEnabled = false;
+                    folderToScan = null;
+                    PrettyPrinter.print("Folder scanning deactivated\n");
+                    break MAIN_LOOP;
+
+                default:
+                    PrettyPrinter.print("Try again\n");
+                    break;
+            }
+        } while (true);
+
     }
 
     private static Path getFilePath() {
@@ -323,16 +345,30 @@ public class Runner {
     }
 
     private static void importContacts() {
-        Path filePath = getFilePath();
 
-        ContactListLogger.getLog().debug("Path to file got from input: " + filePath);
+        if (scanningEnabled) {
 
-        try {
-            importExportService.importFromFile(filePath);
-            PrettyPrinter.print("Contacts have been imported successfully\n");
-        } catch (ServiceException e) {
-            PrettyPrinter.print("Could not import contacts: " + e.getMessage() + "\n");
+            try {
+                importExportService.importFromFolder(folderToScan);
+                PrettyPrinter.print("Contacts have been imported successfully\n");
+            } catch (ServiceException e) {
+                PrettyPrinter.print("Could not import contacts: " + e.getMessage() + "\n");
+            }
+
+        } else {
+            Path filePath = getFilePath();
+
+            ContactListLogger.getLog().debug("Path to file got from input: " + filePath);
+
+            try {
+                importExportService.importFromFile(filePath);
+                PrettyPrinter.print("Contacts have been imported successfully\n");
+            } catch (ServiceException e) {
+                PrettyPrinter.print("Could not import contacts: " + e.getMessage() + "\n");
+            }
         }
+
+
     }
 
     private static void exportContacts() {

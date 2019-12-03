@@ -8,5 +8,4 @@ import java.util.List;
 public interface FolderMonitor {
     public void start() throws IOException, InterruptedException;
     public List<Path> getListOfFilesFromFolder();
-    public void setMonitorStatus(boolean status);
 }

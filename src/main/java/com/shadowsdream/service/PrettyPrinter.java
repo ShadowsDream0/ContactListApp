@@ -13,18 +13,18 @@ public class PrettyPrinter {
             "|======================================================================|\n" +
             "|                   Select an action on contact list                   |\n" +
             "|----------------------------------------------------------------------|\n" +
-            "|                        <1> - show all contacts                       |\n" +
-            "|                        <2> - view details of contact                 |\n" +
-            "|                        <3> - remove contact                          |\n" +
-            "|                        <4> - remove phone number                     |\n" +
-            "|                        <5> - save contact                            |\n" +
-            "|                        <6> - update contact                          |\n" +
-            "|                        <7> - update phone number                     |\n" +
-            "|                        <8> - import contacts from file               |\n" +
-            "|                        <9> - export contacts to file                 |\n" +
-            "|                        <10> - send exported contacts by email        |\n" +
-            "|                        <11> - start monitoring folder                |\n" +
-            "|                        <12> - exit                                   |\n" +
+            "|             <1> - show all contacts                                  |\n" +
+            "|             <2> - view details of contact                            |\n" +
+            "|             <3> - remove contact                                     |\n" +
+            "|             <4> - remove phone number                                |\n" +
+            "|             <5> - save contact                                       |\n" +
+            "|             <6> - update contact                                     |\n" +
+            "|             <7> - update phone number                                |\n" +
+            "|             <8> - import contacts                                    |\n" +
+            "|             <9> - export contacts to file                            |\n" +
+            "|             <10> - send exported contacts by email                   |\n" +
+            "|             <11> - activate/deactivate importing from folder         |\n" +
+            "|             <12> - exit                                              |\n" +
             "|======================================================================|\n" +
             "->";
 

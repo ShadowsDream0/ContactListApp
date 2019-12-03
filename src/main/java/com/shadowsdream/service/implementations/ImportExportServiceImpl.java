@@ -35,7 +35,6 @@ public final class ImportExportServiceImpl implements ImportExportService {
 
     private static PersonDao personDao = null;
     private static ImportExportService importExportService = null;
-    private boolean scanningStatus = false;
 
 
     private ImportExportServiceImpl(){}
@@ -159,36 +158,22 @@ public final class ImportExportServiceImpl implements ImportExportService {
 
 
     @Override
-    public void importFromFolder(Path folderPath) {
-        int threadNumber = 1;
-
-        ExecutorService executorService = Executors.newFixedThreadPool(threadNumber);
-
-        executorService.submit(() -> this.initFolderMonitor(folderPath));
-
-        executorService.shutdown();
-
-        try {
-            executorService.awaitTermination(1, TimeUnit.DAYS);
-        } catch (InterruptedException ie) {
-            ContactListLogger.getLog().debug("Thread interrupted " + ie.getMessage() + " " + ie.getCause());
-            return;
-        }
+    public void importFromFolder(Path folderPath) throws ServiceException {
+        this.initFolderMonitor(folderPath);
     }
 
 
-    private void initFolderMonitor(Path folderPath) {
+    private void initFolderMonitor(Path folderPath) throws ServiceException {
         Objects.requireNonNull(folderPath, "Argument folderPath must not be null");
 
         FolderMonitor folderMonitor = null;
         try {
             folderMonitor = new FolderMonitorImpl(folderPath);
-            folderMonitor.setMonitorStatus(this.scanningStatus);
             folderMonitor.start();
         } catch (FileNotFoundException fe) {
-            throw new RuntimeException("could not read folder: " + fe.getMessage());
+            throw new ServiceException("could not read folder: " + fe.getMessage());
         } catch (IOException e) {
-            throw new RuntimeException("could not read file: " + e.getMessage());
+            throw new ServiceException("could not read file: " + e.getMessage());
         } catch (InterruptedException ie) {
             ContactListLogger.getLog().debug("Thread interrupted " + ie.getMessage() + " " + ie.getCause());
             return;
@@ -204,10 +189,6 @@ public final class ImportExportServiceImpl implements ImportExportService {
         }
     }
 
-    @Override
-    public void setMonitorStatus(boolean scanningStatus) {
-        this.scanningStatus = scanningStatus;
-    }
 
     private static Map<String, String> parsePersonData(String[] personData) throws IOException {
         Objects.requireNonNull(personData, "Argument personData must not be null");

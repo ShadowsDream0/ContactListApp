@@ -1,2 +1,0 @@
-Ivan;Petrov;MALE;1990-10-10;Kyiv;ivan@gmail.com;0675556677;0635559922
-Anna;Petrova;FEMALE;1990-10-10;Kyiv;anna@gmail.com;;0635559922
