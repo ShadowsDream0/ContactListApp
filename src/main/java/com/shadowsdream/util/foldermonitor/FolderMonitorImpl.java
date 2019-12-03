@@ -54,7 +54,7 @@ public class FolderMonitorImpl implements FolderMonitor {
 
             // sent read files to archive
             Files.move(file, this.archive.resolve(file.getFileName()), StandardCopyOption.REPLACE_EXISTING);
-            filesList.add(this.archive.resolve(file.getFileName()));
+            filesList.add(this.archive.toAbsolutePath().resolve(file.getFileName()));
 
             //Thread.sleep(5000);
         }

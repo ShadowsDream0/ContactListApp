@@ -235,7 +235,7 @@ public class PhoneNumberDaoImpl implements PhoneNumberDao{
             preparedStatement.setLong(1, id);
 
             try {
-                if (preparedStatement.executeUpdate() != 1) {
+                if (preparedStatement.executeUpdate() == 0) {
                     throw new DeleteOperationException("no phone number for id: " + id);
                 }
             } catch (SQLException e){
