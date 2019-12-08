@@ -235,17 +235,10 @@ public class PhoneNumberDaoImpl implements PhoneNumberDao {
             PreparedStatement preparedStatement = connection.prepareStatement(sqlStatement);
             preparedStatement.setLong(1, id);
 
-            try {
-                if (preparedStatement.executeUpdate() == 0) {
-                    throw new DeleteOperationException("no phone number for id: " + id);
-                }
-            } catch (SQLException e){
-                throw new DaoOperationException("error during deleting phone number with person id: " + id, e);
-            }
-
         } catch (SQLException e) {
             throw new DaoOperationException("Error during removing phone numbers from table");
         }
+
         ContactListLogger.getLog().debug("Returned from remove() method in PhoneNumberDaoImpl...");
     }
 }

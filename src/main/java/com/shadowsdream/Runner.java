@@ -428,7 +428,7 @@ public class Runner {
 
         PersonDto personDto = null;
         try {
-            personService.findById(id);
+            personDto = personService.findById(id);
         } catch (PersonServiceException e) {
             PrettyPrinter.print("Could not update because " + e.getMessage());
             return;
@@ -538,7 +538,7 @@ public class Runner {
                     PrettyPrinter.print("Enter email\n->");
                     String email = scanner.nextLine();
                     try {
-                        validatorService.validateProperName(email);
+                        validatorService.validateEmail(email);
                     } catch (InvalidInputException e) {
                         PrettyPrinter.print("You failed to enter correct email " + e.getMessage() + "\n");
                         continue;
