@@ -2,7 +2,6 @@ package com.shadowsdream.service.implementations;
 
 
 import com.shadowsdream.dao.PersonDao;
-import com.shadowsdream.dao.implementations.PersonDaoImpl;
 import com.shadowsdream.dto.PersonDto;
 import com.shadowsdream.dto.PersonSaveDto;
 import com.shadowsdream.dto.PersonViewDto;
@@ -16,9 +15,7 @@ import com.shadowsdream.service.PersonService;
 import com.shadowsdream.service.PrettyPrinter;
 import com.shadowsdream.util.logging.ContactListLogger;
 import org.mapstruct.factory.Mappers;
-import org.mockito.Mock;
 
-import javax.sql.DataSource;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -26,14 +23,13 @@ import java.util.stream.Collectors;
 
 public class PersonServiceImpl implements PersonService {
 
-    @Mock
     private PersonDao personDao = null;
 
 
-    public PersonServiceImpl(DataSource dataSource) {
-        Objects.requireNonNull(dataSource, "Arguments dataSource must not be null");
+    public PersonServiceImpl(PersonDao personDao) {
+        Objects.requireNonNull(personDao, "Argument personDao must not be null");
 
-        this.personDao = new PersonDaoImpl(dataSource);
+        this.personDao = personDao;
     }
 
 

@@ -1,5 +1,7 @@
 package com.shadowsdream;
 
+import com.shadowsdream.dao.PersonDao;
+import com.shadowsdream.dao.implementations.PersonDaoImpl;
 import com.shadowsdream.dto.*;
 import com.shadowsdream.dto.mappers.*;
 import com.shadowsdream.exception.InvalidInputException;
@@ -43,6 +45,7 @@ public class Runner {
 
     private static boolean scanningEnabled = false;
     private static Path folderToScan = null;
+    private static PersonDao personDao = null;
 
 
     public static void main(String[] args) {
@@ -716,10 +719,15 @@ public class Runner {
         initDatasource();
         initTablesInDB();
         populateTablesInDB();
+        initPersonDao();
         initPersonservice();
         initValidatorService();
         initImportExportService();
         initEmailSenderService();
+    }
+
+    private static void initPersonDao() {
+        personDao = new PersonDaoImpl(dataSource);
     }
 
 
@@ -730,7 +738,7 @@ public class Runner {
 
 
     private static void initPersonservice() {
-        personService = new PersonServiceImpl(dataSource);
+        personService = new PersonServiceImpl(personDao);
     }
 
 
