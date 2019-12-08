@@ -8,3 +8,5 @@ Baz;Barer;1987-02-28;female;Washington;baz.barer@gmail.com;+1-202-555-0183;+1-20
 Foobar;Bazfooey;1986-11-21;transgender;San Francisco;foobar.bazfooey@gmail.com;+1-202-555-0127;
 Bazfoo;MCBarfoo;1989-03-30;female;New York;bazfoo.mcbarfoo@gmail.com;;
 Barbaz;Foobazey;1985-10-01;male;New York;barbaz.foobazey@gmail.com;;+1-617-555-0177
+Ivan;Petrov;1990-10-10;male;Kyiv;ivan@gmail.com;0675556677;0635559922
+Anna;Petrova;1990-10-10;female;Kyiv;anna@gmail.com;;0635559922
