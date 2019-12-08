@@ -33,13 +33,16 @@ public class PrettyPrinter {
         System.err.print(str);
     }
 
+
     public static void print(String str) {
         System.out.print(str);
     }
 
+
     public static void printMenu() {
         System.out.print(MENU);
     }
+
 
     public static void printPersonInfo(PersonDto person) {
         Objects.requireNonNull(person, "Argument person must not be null");
@@ -56,6 +59,7 @@ public class PrettyPrinter {
         printPhoneNumberSaveDtos(person.getPhoneNumbers());
     }
 
+
     public static void printPersonInfo(PersonViewDto person) {
         Objects.requireNonNull(person, "Argument person must not be null");
 
@@ -66,6 +70,7 @@ public class PrettyPrinter {
                             "================================="
         );
     }
+
 
     public static void printPersonInfo(PersonSaveDto person) {
         Objects.requireNonNull(person, "Argument person must not be null");
@@ -80,6 +85,7 @@ public class PrettyPrinter {
         );
         printPhoneNumbers(person.getPhoneNumbers());
     }
+
 
     public static void printPhoneNumber(PhoneNumberDto phoneNumber) {
         if (phoneNumber == null) {
@@ -105,9 +111,11 @@ public class PrettyPrinter {
         );
     }
 
+
     public static void printPressAnyKey() {
         System.out.println("\n--------------------------\nPress any key to continue\n--------------------------");
     }
+
 
     private static void printPhoneNumberSaveDtos(List<PhoneNumberDto> phoneNumberDtoList) {
         if (phoneNumberDtoList == null) {
@@ -118,6 +126,7 @@ public class PrettyPrinter {
         System.out.println("- - - - - - - - - - - - - -  - - - - - - - - -");
 
     }
+
 
     private static void printPhoneNumbers(List<PhoneNumberSaveDto> phoneNumberDtoList) {
         if (phoneNumberDtoList == null) {

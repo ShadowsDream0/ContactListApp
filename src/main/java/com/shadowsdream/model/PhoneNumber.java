@@ -10,6 +10,7 @@ import lombok.*;
 @AllArgsConstructor
 @ToString
 public class PhoneNumber {
+
     private Long id;
     private String phone;
     private PhoneType type;

@@ -268,7 +268,6 @@ public class Runner {
 
 
     private static void removeContact() {
-
         PrettyPrinter.print("Enter person id who you want to delete from contact list\n");
         Long id = scanLong();
 
@@ -723,14 +722,17 @@ public class Runner {
         initEmailSenderService();
     }
 
+
     private static void initDatasource() {
         dataSource = JdbcUtil.createPostgresDataSource(
                 "jdbc:postgresql://localhost:5432/" + dataBase, "postgres", "Password1");
     }
 
+
     private static void initPersonservice() {
         personService = new PersonServiceImpl(dataSource);
     }
+
 
     private static void initTablesInDB() {
         String createTablesSql = FileReader.readWholeFileFromResources(TABLE_INITIALIZATION_SQL_FILE);
@@ -744,6 +746,7 @@ public class Runner {
         }
     }
 
+
     private static void populateTablesInDB() {
         String createTablesSql = FileReader.readWholeFileFromResources(TABLE_POPULATION_SQL_FILE);
         try (Connection connection = dataSource.getConnection()) {
@@ -756,20 +759,23 @@ public class Runner {
         }
     }
 
+
     private static void initValidatorService() {
         validatorService = ValidatorServiceImpl.getInstance();
     }
 
+
     private static void initImportExportService() {
         importExportService = ImportExportServiceImpl.getInstance(dataSource);
     }
+
 
     private static void initEmailSenderService() {
         try {
             emailSenderServiceImpl = EmailSenderServiceImpl.getInstance();
         } catch (ServiceException e) {
             PrettyPrinter.printError("Warning! File with email properties not found. " +
-                    "Application is running in restricted mode");
+                    "Sending emails not available");
         }
     }
 }

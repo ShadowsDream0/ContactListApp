@@ -1,6 +1,6 @@
 package com.shadowsdream.service;
 
-import com.shadowsdream.dao.PersonDaoImpl;
+import com.shadowsdream.dao.implementations.PersonDaoImpl;
 import com.shadowsdream.dto.PersonSaveDto;
 import com.shadowsdream.dto.PhoneNumberSaveDto;
 import com.shadowsdream.model.enums.Gender;

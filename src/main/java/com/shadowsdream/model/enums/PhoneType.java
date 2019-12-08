@@ -1,6 +1,8 @@
 package com.shadowsdream.model.enums;
 
 public enum PhoneType {
+
+
     WORK("work"),
     HOME("home");
 

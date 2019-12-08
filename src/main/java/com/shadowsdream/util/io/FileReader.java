@@ -15,17 +15,9 @@ import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.joining;
 
-/**
- * {@link FileReader} provides an API that allow to read whole file into a {@link String} by file name.
- */
+
 public class FileReader {
 
-    /**
-     * Returns a {@link String} that contains whole text from the file specified by name.
-     *
-     * @param fileName a name of a text file
-     * @return string that holds whole file content
-     */
     public static String readWholeFileFromResources(String fileName) {
         Path filePath = createPathFromFileName(fileName);
         try (Stream<String> fileLinesStream = openFileLinesStream(filePath)) {
@@ -48,16 +40,9 @@ public class FileReader {
     private static Path createPathFromFileName(String fileName) {
         Objects.requireNonNull(fileName);
 
-//        URL fileUrl = FileReader.class.getClassLoader().getResource(fileName);
-//        //jar:file:/Users/serhiiluhovyi/k8sdevoxx/contact-list-app/target/contact-list-app-1.0-SNAPSHOT.jar!/db/migration/table_initialization.sql
-//        try {
-//            return Paths.get(fileUrl.toURI());
-//        } catch (URISyntaxException e) {
-//            throw new FileReaderException("Invalid file URL",e);
-//        }
-
         URL fileUrl = FileReader.class.getClassLoader().getResource(fileName);
-        System.out.println(fileName);
+
+        // handle files in jar appropriately
         try {
             URI uri = fileUrl.toURI();
 
@@ -77,7 +62,7 @@ public class FileReader {
 
             return Paths.get(uri);
         } catch (URISyntaxException | IOException e) {
-            throw new FileReaderException("Invalid file URL",e);
+            throw new FileReaderException("Invalid file URL", e);
         }
     }
 }

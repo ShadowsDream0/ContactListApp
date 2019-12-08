@@ -3,7 +3,10 @@ package com.shadowsdream.util.email;
 import com.shadowsdream.util.io.FileReader;
 
 import javax.mail.*;
-import javax.mail.internet.*;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeBodyPart;
+import javax.mail.internet.MimeMessage;
+import javax.mail.internet.MimeMultipart;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -15,6 +18,7 @@ import java.util.stream.Collectors;
 
 
 public final class EmailSenderImpl implements EmailSender{
+
     private final String senderName;
     private final String senderPassword;
     private Session session;
@@ -31,6 +35,7 @@ public final class EmailSenderImpl implements EmailSender{
         prepareSession(smtpProperties);
     }
 
+
     @Override
     public void sendEmail(String text, String subject, String recipient) throws MessagingException {
         Objects.requireNonNull(text, "Argument text must not be null");
@@ -44,6 +49,7 @@ public final class EmailSenderImpl implements EmailSender{
 
         Transport.send(message);
     }
+
 
     @Override
     public void sendEmail(String text, String subject, String recipient, String attachmentPath)
@@ -66,6 +72,7 @@ public final class EmailSenderImpl implements EmailSender{
         Transport.send(message);
     }
 
+
     private Message prepareMessage(String subject, String recipient) throws MessagingException {
         Message message = new MimeMessage(session);
         message.setFrom(new InternetAddress(senderName));
@@ -74,6 +81,7 @@ public final class EmailSenderImpl implements EmailSender{
 
         return message;
     }
+
 
     private Multipart prepareTextMultipart(String text) throws MessagingException {
         Multipart multipart = new MimeMultipart();
@@ -84,6 +92,7 @@ public final class EmailSenderImpl implements EmailSender{
         return multipart;
     }
 
+
     private List<String> getSenderInfoFromFile(String fileName) throws FileNotFoundException {
         Path filePath = Path.of(fileName);
         if ( !Files.exists(filePath) ) {
@@ -93,6 +102,7 @@ public final class EmailSenderImpl implements EmailSender{
         return FileReader.readLinesFromFile(filePath)
                 .collect(Collectors.toList());
     }
+
 
     private void prepareSession(Properties smtpProperties) {
         session = Session.getDefaultInstance(smtpProperties, new Authenticator() {

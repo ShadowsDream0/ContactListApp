@@ -8,6 +8,7 @@ import org.mapstruct.Mappings;
 
 @Mapper
 public interface PersonViewDtoMapper {
+
     @Mappings({
             @Mapping(target = "id", source = "personViewDto.id"),
             @Mapping(target = "firstName", source = "personViewDto.firstName"),

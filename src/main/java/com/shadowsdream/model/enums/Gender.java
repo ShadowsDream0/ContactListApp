@@ -1,6 +1,7 @@
 package com.shadowsdream.model.enums;
 
 public enum Gender {
+
     MALE("male"),
     FEMALE("female"),
     TRANSGENDER("transgender");

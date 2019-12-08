@@ -7,6 +7,7 @@ import com.shadowsdream.model.PhoneNumber;
 import java.util.List;
 
 public interface PersonDao {
+
     Long save(Person person) throws DaoOperationException;
 
     List<Person> findAll() throws DaoOperationException;

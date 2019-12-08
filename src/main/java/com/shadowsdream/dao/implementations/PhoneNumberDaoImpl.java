@@ -1,9 +1,9 @@
-package com.shadowsdream.dao;
+package com.shadowsdream.dao.implementations;
 
+import com.shadowsdream.dao.PhoneNumberDao;
 import com.shadowsdream.exception.DaoOperationException;
 import com.shadowsdream.exception.DeleteOperationException;
 import com.shadowsdream.exception.InsertOperationException;
-import com.shadowsdream.exception.UpdateOperationException;
 import com.shadowsdream.model.PhoneNumber;
 import com.shadowsdream.model.enums.PhoneType;
 import com.shadowsdream.util.logging.ContactListLogger;
@@ -15,7 +15,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
 
-public class PhoneNumberDaoImpl implements PhoneNumberDao{
+public class PhoneNumberDaoImpl implements PhoneNumberDao {
+
     private DataSource dataSource;
 
     private final String SELECT_ALL_SQL_STATEMENT = "SELECT * FROM phones ORDER BY person_id;";

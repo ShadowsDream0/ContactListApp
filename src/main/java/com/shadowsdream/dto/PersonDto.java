@@ -1,8 +1,10 @@
 package com.shadowsdream.dto;
 
-import com.shadowsdream.model.PhoneNumber;
 import com.shadowsdream.model.enums.Gender;
-import lombok.*;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -14,6 +16,7 @@ import java.util.Objects;
 @ToString
 @Builder
 public class PersonDto {
+
     private Long id;
     private String firstName;
     private String lastName;

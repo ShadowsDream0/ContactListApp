@@ -17,6 +17,7 @@ import java.util.Objects;
 import java.util.Properties;
 
 public final class EmailSenderServiceImpl implements EmailService {
+
     private static EmailSender emailSender;
     private static EmailSenderServiceImpl emailSenderServiceImpl;
     private static ValidatorService validatorService;
@@ -29,6 +30,7 @@ public final class EmailSenderServiceImpl implements EmailService {
 
 
     private EmailSenderServiceImpl(){}
+
 
     public static EmailSenderServiceImpl getInstance() throws ServiceException {
         if (emailSenderServiceImpl == null) {
@@ -44,6 +46,7 @@ public final class EmailSenderServiceImpl implements EmailService {
 
         return emailSenderServiceImpl;
     }
+
 
     public void sendEmail(String text, String recipient) throws ServiceException {
         Objects.requireNonNull(recipient, "Argument recipient must not be null");

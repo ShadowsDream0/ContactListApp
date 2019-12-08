@@ -13,10 +13,12 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class FolderMonitorImpl implements FolderMonitor {
+
     private Path folder = null;
     private List<Path> filesList = null;
     private String fileSeparator = null;
     private Path archive = null;
+
 
     public FolderMonitorImpl(Path folder) throws IOException {
         this.folder = folder;
@@ -39,10 +41,10 @@ public class FolderMonitorImpl implements FolderMonitor {
             throw new FileNotFoundException("folder not found " + folder);
         }
 
-        // get all files from folder
+        // scan all files from folder
         List<Path> bufferList = Files.list(folder).collect(Collectors.toList());
 
-        // get files found in the folder
+        // add files in collection
         for (Path file : bufferList) {
 
             if (!Files.isRegularFile(file) || Files.isHidden(file)) {
@@ -55,8 +57,6 @@ public class FolderMonitorImpl implements FolderMonitor {
             // sent read files to archive
             Files.move(file, this.archive.resolve(file.getFileName()), StandardCopyOption.REPLACE_EXISTING);
             filesList.add(this.archive.toAbsolutePath().resolve(file.getFileName()));
-
-            //Thread.sleep(5000);
         }
     }
 

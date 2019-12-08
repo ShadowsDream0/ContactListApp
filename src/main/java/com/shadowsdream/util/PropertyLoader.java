@@ -10,12 +10,13 @@ public final class PropertyLoader {
     private static final String CONFIGURATION_FILE = "/home/shadows-dream/IdeaProjects/contact-list-app/src/main/resources/configuration.properties";
     private static final String SMTP_PROPERTIES_FILE = "/home/shadows-dream/IdeaProjects/contact-list-app/src/main/resources/smtp.properties";
 
+
     private PropertyLoader(){}
+
 
     public static String getDelimiter() throws IOException {
         return getConfigurationProperties().getProperty("delimiter");
     }
-
 
 
     public static Properties getSmtpProtrties() throws IOException {
@@ -23,6 +24,7 @@ public final class PropertyLoader {
         properties.load(new FileReader(SMTP_PROPERTIES_FILE));
         return properties;
     }
+
 
     private static Properties getConfigurationProperties() throws IOException {
         Properties properties = new Properties();

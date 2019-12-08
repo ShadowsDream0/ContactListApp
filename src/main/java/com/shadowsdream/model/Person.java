@@ -14,6 +14,7 @@ import java.util.List;
 @EqualsAndHashCode(of = "id")
 @ToString
 public class Person {
+
     private Long id;
     private String firstName;
     private String lastName;

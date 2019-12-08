@@ -13,6 +13,7 @@ import java.util.Objects;
 @ToString
 @Builder
 public class PhoneNumberSaveDto {
+
     private String phone;
     private PhoneType type;
 

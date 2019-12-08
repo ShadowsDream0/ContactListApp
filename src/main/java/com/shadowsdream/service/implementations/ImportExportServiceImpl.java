@@ -1,7 +1,7 @@
 package com.shadowsdream.service.implementations;
 
 import com.shadowsdream.dao.PersonDao;
-import com.shadowsdream.dao.PersonDaoImpl;
+import com.shadowsdream.dao.implementations.PersonDaoImpl;
 import com.shadowsdream.exception.DaoOperationException;
 import com.shadowsdream.exception.InsertOperationException;
 import com.shadowsdream.exception.ServiceException;
@@ -26,9 +26,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDate;
 import java.util.*;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 public final class ImportExportServiceImpl implements ImportExportService {
@@ -211,6 +208,7 @@ public final class ImportExportServiceImpl implements ImportExportService {
         return mapPersonData;
     }
 
+
     private static Person getPersonFromData(Map<String, String> personData) {
         Objects.requireNonNull(personData, "Argument personData must not be null");
 
@@ -225,6 +223,7 @@ public final class ImportExportServiceImpl implements ImportExportService {
 
         return person;
     }
+
 
     private static List<PhoneNumber> getListOfPhoneNumbersFromData(Map<String, String> personData) {
         List<PhoneNumber> phoneNumbers = new ArrayList<>();
@@ -248,6 +247,7 @@ public final class ImportExportServiceImpl implements ImportExportService {
 
         return phoneNumbers;
     }
+
 
     private static String getDelimiter() throws ServiceException {
         // get delimiter from properties file

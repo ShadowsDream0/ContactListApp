@@ -1,5 +1,7 @@
-package com.shadowsdream.dao;
+package com.shadowsdream.dao.implementations;
 
+import com.shadowsdream.dao.PersonDao;
+import com.shadowsdream.dao.PhoneNumberDao;
 import com.shadowsdream.exception.*;
 import com.shadowsdream.model.enums.Gender;
 import com.shadowsdream.model.Person;
@@ -12,6 +14,7 @@ import java.sql.Date;
 import java.util.*;
 
 public class PersonDaoImpl implements PersonDao {
+
     private DataSource dataSource;
     private PhoneNumberDao phoneNumberDao;
 
@@ -43,7 +46,7 @@ public class PersonDaoImpl implements PersonDao {
 
     @Override
     public Long save(Person person) throws DaoOperationException {
-        ContactListLogger.getLog().debug("Started save() method in PersonDaoImpl...");
+        ContactListLogger.getLog().debug("Invoked save() method in PersonDaoImpl...");
 
         Objects.requireNonNull(person, "Argument person must not be null");
 
@@ -83,7 +86,7 @@ public class PersonDaoImpl implements PersonDao {
 
     @Override
     public List<Person> findAll() throws DaoOperationException{
-        ContactListLogger.getLog().debug("Started findAll() method in PersonDaoImpl...");
+        ContactListLogger.getLog().debug("Invoked findAll() method in PersonDaoImpl...");
 
         ResultSet resultSet = null;
         try (Connection connection = dataSource.getConnection()) {
@@ -100,7 +103,7 @@ public class PersonDaoImpl implements PersonDao {
 
     @Override
     public Person findById(Long id) throws DaoOperationException {
-        ContactListLogger.getLog().debug("Started findById() method in PersonDaoImpl...");
+        ContactListLogger.getLog().debug("Invoked findById() method in PersonDaoImpl...");
 
         Objects.requireNonNull(id, "Argument id must not be null");
 
@@ -152,7 +155,7 @@ public class PersonDaoImpl implements PersonDao {
 
 
     public void updatePhoneNumber(PhoneNumber phoneNumber) throws DaoOperationException {
-        ContactListLogger.getLog().debug("Started updatePhoneNumber() method in PhoneNumberDaoImpl...");
+        ContactListLogger.getLog().debug("Invoked updatePhoneNumber() method in PhoneNumberDaoImpl...");
         try {
             phoneNumberDao.updatePhoneNumber(phoneNumber);
         } catch (DaoOperationException e) {
@@ -164,7 +167,7 @@ public class PersonDaoImpl implements PersonDao {
 
     @Override
     public void removePerson(Long id) throws DaoOperationException {
-        ContactListLogger.getLog().debug("Started removePerson() method in PersonDaoImpl...");
+        ContactListLogger.getLog().debug("Invoked removePerson() method in PersonDaoImpl...");
 
         Objects.requireNonNull(id, "Argument id must not be null");
 
@@ -192,7 +195,7 @@ public class PersonDaoImpl implements PersonDao {
 
     @Override
     public void removePhoneNumber(Long phoneNumberId) throws DaoOperationException {
-        ContactListLogger.getLog().debug("Started removePhoneNumber() method in PersonDaoImpl...");
+        ContactListLogger.getLog().debug("Invoked removePhoneNumber() method in PersonDaoImpl...");
 
         try {
             phoneNumberDao.removePhoneNumber(phoneNumberId);
@@ -242,7 +245,7 @@ public class PersonDaoImpl implements PersonDao {
 
 
     private boolean setPersonFromResultSet(ResultSet resultSet, Person person) throws DaoOperationException {
-        ContactListLogger.getLog().debug("Started setPersonFromResultSet() method in PersonDaoImpl...");
+        ContactListLogger.getLog().debug("Invoked setPersonFromResultSet() method in PersonDaoImpl...");
 
         Objects.requireNonNull(resultSet, "Argument resultSet must not be null");
         Objects.requireNonNull(person, "Argument person must not be null");
@@ -296,7 +299,7 @@ public class PersonDaoImpl implements PersonDao {
 
 
     private Collection<Person> getPersonCollection(ResultSet resultSet) throws DaoOperationException {
-        ContactListLogger.getLog().debug("Started getPersonCollection() method in PersonDaoImpl...");
+        ContactListLogger.getLog().debug("Invoked getPersonCollection() method in PersonDaoImpl...");
         Collection<Person> collectionOfPersons = new ArrayList<>();
 
         while (true) {

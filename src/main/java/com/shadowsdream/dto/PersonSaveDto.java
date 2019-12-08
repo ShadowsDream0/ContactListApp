@@ -1,8 +1,10 @@
 package com.shadowsdream.dto;
 
-import com.shadowsdream.model.Person;
 import com.shadowsdream.model.enums.Gender;
-import lombok.*;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -13,6 +15,7 @@ import java.util.Objects;
 @Builder
 @ToString
 public class PersonSaveDto {
+
     private String firstName;
     private String lastName;
     private Gender gender;

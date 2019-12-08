@@ -1,6 +1,7 @@
 package com.shadowsdream.exception;
 
 public class SelectOperationException extends DaoOperationException {
+
     public SelectOperationException(String message) {
         super(message);
     }
