@@ -16,7 +16,7 @@ public interface PersonService {
 
     PersonDto findById(Long id) throws PersonServiceException;
 
-    void updatePerson(PersonDto person);
+    void updatePerson(PersonDto person) throws PersonServiceException;
 
     void updatePhoneNumber(PhoneNumberDto phoneNumberDto) throws PersonServiceException;
 

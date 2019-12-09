@@ -428,7 +428,12 @@ public class Runner {
             return;
         }
 
-        personService.updatePerson(personDto);
+        try {
+            personService.updatePerson(personDto);
+        } catch (PersonServiceException e) {
+            PrettyPrinter.printError(e.getMessage() + "\n");
+            return;
+        }
         PrettyPrinter.print("Contact updated successfully:\n");
         PrettyPrinter.printPersonInfo(personDto);
     }
@@ -800,7 +805,7 @@ public class Runner {
             emailSenderServiceImpl = EmailSenderServiceImpl.getInstance();
         } catch (ServiceException e) {
             emailSendingNotSupported = true;
-            PrettyPrinter.printError("Warning! File with smtp credentials not found. " +
+            PrettyPrinter.printError("Warning! File with smtp-server credentials not found. " +
                     "Sending emails not available\n");
         }
     }

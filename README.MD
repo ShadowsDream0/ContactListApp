@@ -6,7 +6,7 @@ ContactListApp is a command line application that allows user to manage his/her 
 - add a new contact with information about: first name, last name, gender, date of birth, city, email and phone numbers
 - view general and detailed information about contacts
 - update contact's information
-- import contacts from one file or from several files located in folder pointed by user
+- import contacts from one or several files located in folder pointed by user
 - export contacts from contact list to a file
 - receive exported contacts by email as a text or as an attached file
 - activity logging
@@ -20,12 +20,12 @@ Preconditions for running the application:
 
 #### Planned Features
 - removing hard coded smtp-server credentials
-- transforming to a web app
+- transforming into a web app
 - multithreaded execution of folder scanning
 
 #### Run example
 ```
-java -jar cl-app-with-dependencies.jar <database_name>
+java -jar cl-app.jar <database_name>
 ```
 ##### Development tools info
 - Apache Maven was used to build the project

@@ -94,7 +94,7 @@ public class PersonServiceImpl implements PersonService {
     }
 
 
-    public void updatePerson(PersonDto personDto) {
+    public void updatePerson(PersonDto personDto) throws PersonServiceException {
         ContactListLogger.getLog().info("Invoked updatePerson() method...");
         Objects.requireNonNull(personDto, "Argument personDto must not be null");
 
@@ -104,9 +104,8 @@ public class PersonServiceImpl implements PersonService {
         try {
             personDao.updatePerson(mapper.fromDto(personDto));
         } catch (DaoOperationException e) {
-            ContactListLogger.getLog().error("Critical error occurred: " + e.getMessage() + " " + e.getCause());
-            PrettyPrinter.printError("Server critical error. Exiting...");
-            System.exit(1);
+            ContactListLogger.getLog().error("SQLException caught: " + e.getMessage() + " " + e.getCause());
+            throw new PersonServiceException("Could not update contact. Try another email. If it doesn't work, please, inform developers");
         }
     }
 
