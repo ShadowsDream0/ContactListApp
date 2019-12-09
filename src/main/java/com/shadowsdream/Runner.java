@@ -46,6 +46,7 @@ public class Runner {
     private static boolean scanningEnabled = false;
     private static Path folderToScan = null;
     private static PersonDao personDao = null;
+    private static boolean emailSendingNotSupported = false;
 
 
     public static void main(String[] args) {
@@ -304,6 +305,11 @@ public class Runner {
     private static void sendContactsByEmail() {
         boolean successfulInput = false;
 
+        if (emailSendingNotSupported) {
+            PrettyPrinter.printError("Email sending feature not supported due to missing file with credentials\n");
+            return;
+        }
+
         do {
             PrettyPrinter.print("Select action: 1 - send contacts in a message, 2 - send contacts in an attached file\n");
             String choice = scanner.nextLine();
@@ -381,6 +387,12 @@ public class Runner {
             PrettyPrinter.print("Enter file path\n");
             fileName = scanner.nextLine();
             String fileSeparator = FileSystems.getDefault().getSeparator();
+
+            if (!fileName.contains(fileSeparator)) {
+                PrettyPrinter.print("You must enter valid directory path\n");
+                continue;
+            }
+
             String directory = fileName.substring(0, fileName.lastIndexOf(fileSeparator));
             Path directoryPath = Path.of(directory);
 
@@ -435,6 +447,11 @@ public class Runner {
         }
 
         List<PhoneNumberDto> dtoPhoneNumbers = personDto.getPhoneNumbers();
+
+        if (dtoPhoneNumbers == null) {
+            PrettyPrinter.print("Contact has no phone numbers yet\n");
+            return;
+        }
 
         boolean done = false;
         do {
@@ -782,8 +799,9 @@ public class Runner {
         try {
             emailSenderServiceImpl = EmailSenderServiceImpl.getInstance();
         } catch (ServiceException e) {
-            PrettyPrinter.printError("Warning! File with email properties not found. " +
-                    "Sending emails not available");
+            emailSendingNotSupported = true;
+            PrettyPrinter.printError("Warning! File with smtp credentials not found. " +
+                    "Sending emails not available\n");
         }
     }
 }
