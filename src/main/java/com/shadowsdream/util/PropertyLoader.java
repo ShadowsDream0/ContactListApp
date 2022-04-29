@@ -19,7 +19,7 @@ public final class PropertyLoader {
     }
 
 
-    public static Properties getSmtpProtrties() throws IOException {
+    public static Properties getSmtpProperties() throws IOException {
         Properties properties = new Properties();
         properties.load(new FileReader(SMTP_PROPERTIES_FILE));
         return properties;

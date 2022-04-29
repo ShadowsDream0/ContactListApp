@@ -2,15 +2,12 @@ package com.shadowsdream.util.foldermonitor;
 
 import com.shadowsdream.util.logging.ContactListLogger;
 
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class FolderMonitorImpl implements FolderMonitor {
 

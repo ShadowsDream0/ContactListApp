@@ -58,7 +58,7 @@ public final class EmailSenderServiceImpl implements EmailService {
         } catch (AddressException ae) {
             throw new ServiceException("recipient address is not valid" + ae.getMessage());
         } catch (MessagingException me) {
-            ContactListLogger.getLog().debug("Error occurred during sending email" + me.getMessage() + " " + me.getCause());
+            ContactListLogger.getLog().debug("Error occurred during sending email " + me.getMessage() + " " + me.getCause());
             PrettyPrinter.printError("Error occurred during sending email. Exiting...");
             System.exit(1);
         }
@@ -87,7 +87,7 @@ public final class EmailSenderServiceImpl implements EmailService {
         Properties smtpProperties = null;
 
         try {
-            smtpProperties = PropertyLoader.getSmtpProtrties();
+            smtpProperties = PropertyLoader.getSmtpProperties();
         } catch (IOException e) {
             ContactListLogger.getLog().debug("Error occurred during loading smtp properties from file " + e.getMessage() + " " + e.getCause());
             PrettyPrinter.printError("Application was not configured properly for sending email. Exiting...\n");
