@@ -15,7 +15,7 @@ ContactListApp is a command line application that allows user to manage his/her 
 Preconditions for running the application:
 
 - latest JRE
-- installed postgresql server with user "postgres" and created database. Name of the database is passed as argument to the application
+- installed postgresql server with user "postgres" and created database with access permission. Name of the database is passed as argument to the application
 - email sending feature is supported only if the app can find the file (path to the file is hard coded in EmailSenderServiceImpl) with credentials for smtp-server. Login and password must be on first and second line accordingly.
 
 #### Planned Features
@@ -25,7 +25,7 @@ Preconditions for running the application:
 
 #### Run example
 ```
-java -jar cl-app.jar <database_name>
+java -jar cl-app-jar-with-dependencies.jar <database_name>
 ```
 ##### Development tools info
 - Apache Maven was used to build the project
