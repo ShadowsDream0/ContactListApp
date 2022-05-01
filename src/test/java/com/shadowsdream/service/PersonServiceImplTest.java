@@ -1,6 +1,6 @@
 package com.shadowsdream.service;
 
-import com.shadowsdream.dao.implementations.PersonDaoImpl;
+import com.shadowsdream.dao.impl.PersonDaoImpl;
 import com.shadowsdream.dto.*;
 import com.shadowsdream.exception.DeleteOperationException;
 import com.shadowsdream.exception.InsertOperationException;
@@ -10,7 +10,7 @@ import com.shadowsdream.model.Person;
 import com.shadowsdream.model.PhoneNumber;
 import com.shadowsdream.model.enums.Gender;
 import com.shadowsdream.model.enums.PhoneType;
-import com.shadowsdream.service.implementations.PersonServiceImpl;
+import com.shadowsdream.service.impl.PersonServiceImpl;
 
 import java.time.LocalDate;
 import java.time.Month;

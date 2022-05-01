@@ -1,4 +1,4 @@
-package com.shadowsdream.dao.implementations;
+package com.shadowsdream.dao.impl;
 
 import com.shadowsdream.dao.PersonDao;
 import com.shadowsdream.dao.PhoneNumberDao;

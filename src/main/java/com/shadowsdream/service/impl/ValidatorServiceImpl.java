@@ -1,4 +1,4 @@
-package com.shadowsdream.service.implementations;
+package com.shadowsdream.service.impl;
 
 import com.shadowsdream.exception.InvalidInputException;
 import com.shadowsdream.service.ValidatorService;

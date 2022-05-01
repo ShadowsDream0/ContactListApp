@@ -20,7 +20,7 @@
         <appender-ref ref="FILE"/>
     </root>
 
-    <logger name="com.shadowsdream.service.implementations.PersonServiceImpl" level="info" additivity="false">
+    <logger name="com.shadowsdream.service.impl.PersonServiceImpl" level="info" additivity="false">
         <appender-ref ref="FILE"/>
     </logger>
 

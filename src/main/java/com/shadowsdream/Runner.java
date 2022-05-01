@@ -1,7 +1,7 @@
 package com.shadowsdream;
 
 import com.shadowsdream.dao.PersonDao;
-import com.shadowsdream.dao.implementations.PersonDaoImpl;
+import com.shadowsdream.dao.impl.PersonDaoImpl;
 import com.shadowsdream.dto.*;
 import com.shadowsdream.dto.mappers.*;
 import com.shadowsdream.exception.InvalidInputException;
@@ -9,7 +9,7 @@ import com.shadowsdream.exception.PersonServiceException;
 import com.shadowsdream.exception.ServiceException;
 import com.shadowsdream.model.enums.*;
 import com.shadowsdream.service.*;
-import com.shadowsdream.service.implementations.*;
+import com.shadowsdream.service.impl.*;
 import com.shadowsdream.util.JdbcUtil;
 import com.shadowsdream.util.io.FileReader;
 import com.shadowsdream.util.logging.ContactListLogger;

@@ -1,4 +1,4 @@
-package com.shadowsdream.service.implementations;
+package com.shadowsdream.service.impl;
 
 import com.shadowsdream.exception.ServiceException;
 import com.shadowsdream.service.EmailService;

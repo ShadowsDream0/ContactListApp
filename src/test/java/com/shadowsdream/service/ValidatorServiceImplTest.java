@@ -1,7 +1,7 @@
 package com.shadowsdream.service;
 
 import com.shadowsdream.exception.InvalidInputException;
-import com.shadowsdream.service.implementations.ValidatorServiceImpl;
+import com.shadowsdream.service.impl.ValidatorServiceImpl;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;

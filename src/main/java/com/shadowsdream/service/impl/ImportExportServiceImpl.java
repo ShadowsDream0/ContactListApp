@@ -1,7 +1,7 @@
-package com.shadowsdream.service.implementations;
+package com.shadowsdream.service.impl;
 
 import com.shadowsdream.dao.PersonDao;
-import com.shadowsdream.dao.implementations.PersonDaoImpl;
+import com.shadowsdream.dao.impl.PersonDaoImpl;
 import com.shadowsdream.exception.DaoOperationException;
 import com.shadowsdream.exception.InsertOperationException;
 import com.shadowsdream.exception.ServiceException;

@@ -1,8 +1,7 @@
-package com.shadowsdream.dao.implementations;
+package com.shadowsdream.dao.impl;
 
 import com.shadowsdream.dao.PhoneNumberDao;
 import com.shadowsdream.exception.DaoOperationException;
-import com.shadowsdream.exception.DeleteOperationException;
 import com.shadowsdream.exception.InsertOperationException;
 import com.shadowsdream.model.PhoneNumber;
 import com.shadowsdream.model.enums.PhoneType;
