@@ -25,7 +25,7 @@ public class PersonController {
 
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
-    public List<PersonDto> showAllContacts() {
+    public List<PersonViewDto> showAllContactsCompact() {
         return personFacade.findAll();
     }
 }
